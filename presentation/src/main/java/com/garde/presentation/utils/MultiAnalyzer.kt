@@ -3,8 +3,6 @@ package com.garde.presentation.utils
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.garde.presentation.screen.addproduct.AddProductStep
-import timber.log.Timber
-import java.util.concurrent.atomic.AtomicReference
 
 class MultiAnalyzer(
     private val barcodeAnalyzer: BarcodeScanningAnalyzer,
@@ -12,16 +10,12 @@ class MultiAnalyzer(
     private val stepProvider: () -> AddProductStep
 ) : ImageAnalysis.Analyzer {
 
-    private val activeAnalyzer = AtomicReference<ImageAnalysis.Analyzer>(barcodeAnalyzer)
-
     override fun analyze(image: ImageProxy) {
-        Timber.i("ZAEAZE step = $stepProvider")
         when (stepProvider.invoke()) {
-            is AddProductStep.ScanBarcode -> activeAnalyzer.set(barcodeAnalyzer)
-            is AddProductStep.ScanExpirationDate -> activeAnalyzer.set(textAnalyzer)
-            else -> return
+            is AddProductStep.ScanBarcode -> barcodeAnalyzer.analyze(image)
+            is AddProductStep.ScanExpirationDate -> textAnalyzer.analyze(image)
+            else -> image.close()
         }
-        activeAnalyzer.get().analyze(image)
     }
 }
 

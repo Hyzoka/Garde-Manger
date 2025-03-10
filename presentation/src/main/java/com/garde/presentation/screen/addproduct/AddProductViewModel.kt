@@ -1,9 +1,10 @@
 package com.garde.presentation.screen.addproduct
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.garde.domain.usecase.ExtractExpirationDateUseCase
 import com.garde.domain.usecase.GetProductUseCase
-import com.garde.presentation.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddProductViewModel @Inject constructor(
     private val getProductUseCase: GetProductUseCase,
+    private val extractExpirationDateUseCase: ExtractExpirationDateUseCase
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(AddProductViewState())
@@ -34,13 +36,11 @@ class AddProductViewModel @Inject constructor(
 
     fun processScannedText(text: String) {
         viewModelScope.launch {
-            _viewState.value = _viewState.value.copy(
-                step = AddProductStep.Confirmation,
-                expirationDate = text,
-                isBottomSheetVisible = true
-            )
-            val detectedDate = DateUtils.extractDate(text)
+            Log.i("AddProductViewModel", "Scanned text: $text")
+
+            val detectedDate = extractExpirationDateUseCase(text)
             if (detectedDate != null) {
+                Log.i("AddProductViewModel", "Detected expiration date: $detectedDate")
                 _viewState.value = _viewState.value.copy(
                     step = AddProductStep.Confirmation,
                     expirationDate = detectedDate,

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Garde-Manger</string>
+    <string name="scan_barcode">Scanner le code-barres</string>
+    <string name="scan_expiration_date">Scanner la date de péremption</string>
+    <string name="product_name">Nom du produit :</string>
+    <string name="brand">Marque : %s</string>
+    <string name="expiration_date">Date de péremption : %s</string>
+    <string name="not_available">Non disponible</string>
+    <string name="save_product">Enregistrer le produit</string>
+    <string name="unknow_name">Nom inconnu</string>
+
+</resources>

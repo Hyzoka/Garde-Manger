@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,6 +43,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.garde.core.R
 import com.garde.presentation.component.CameraView
 import com.garde.presentation.component.DrawBarcode
@@ -146,19 +148,15 @@ fun ProductBottomSheetContent(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        // 📌 Section principale avec image à gauche et infos à droite
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 📌 Image du produit (Carré, Placeholder, Gestion des erreurs)
             viewState.product?.imageUrl?.let { imageUrl ->
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(imageUrl)
-                        //.crossfade(true) // Animation fluide
-                       // .placeholder(R.drawable.placeholder) // Image par défaut pendant le chargement
-                        //.error(R.drawable.image_not_found) // Image en cas d’erreur
+                        .crossfade(true)
                         .build(),
                     contentDescription = "Image du produit",
                     modifier = Modifier
@@ -168,7 +166,7 @@ fun ProductBottomSheetContent(
                     contentScale = ContentScale.Crop
                 )
             } ?: Image(
-                painter = painterResource(id = R.drawable.placeholder), // Affiche un placeholder si pas d’image
+                painter = painterResource(id = R.drawable.placeholder),
                 contentDescription = "Placeholder",
                 modifier = Modifier
                     .size(100.dp)
@@ -177,12 +175,11 @@ fun ProductBottomSheetContent(
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.width(16.dp)) // Espacement entre l’image et le texte
+            Spacer(modifier = Modifier.width(16.dp))
 
-            // 📌 Infos du produit (nom, marque, date de péremption)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = viewState.product?.name ?: "Nom inconnu",
+                    text = viewState.product?.name ?: stringResource(R.string.unknow_name),
                     style = MaterialTheme.typography.titleLarge,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -191,7 +188,10 @@ fun ProductBottomSheetContent(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Marque: ${viewState.product?.brand ?: "Non renseigné"}",
+                    text = stringResource(
+                        R.string.brand,
+                        viewState.product?.brand ?: stringResource(R.string.not_available)
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
@@ -199,7 +199,10 @@ fun ProductBottomSheetContent(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Date de péremption: ${viewState.expirationDate ?: "Non disponible"}",
+                    text = stringResource(
+                        R.string.expiration_date,
+                        viewState.expirationDate ?: stringResource(R.string.not_available)
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (viewState.expirationDate == null) Color.Red else Color.Black
                 )
@@ -214,7 +217,7 @@ fun ProductBottomSheetContent(
                 onClick = { viewModel.startExpirationDateScan() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Scanner la date de péremption")
+                Text(stringResource(R.string.scan_expiration_date))
             }
         } else {
             Button(
@@ -222,7 +225,7 @@ fun ProductBottomSheetContent(
                 enabled = viewState.expirationDate.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Enregistrer le produit")
+                Text(stringResource(R.string.save_product))
             }
         }
     }

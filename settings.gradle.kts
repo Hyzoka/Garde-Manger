@@ -23,3 +23,4 @@ rootProject.name = "Garde-Manger"
 include(":app")
 include(":domain")
 include(":presentation")
+include(":core")

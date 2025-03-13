@@ -9,5 +9,6 @@
     <string name="not_available">Not available</string>
     <string name="save_product">Save the product</string>
     <string name="unknow_name">Unknown name</string>
+    <string name="add_product_title">Add Product</string>
 
 </resources>

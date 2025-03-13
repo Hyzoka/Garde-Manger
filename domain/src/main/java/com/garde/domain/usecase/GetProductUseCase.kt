@@ -8,6 +8,6 @@ class GetProductUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
     suspend operator fun invoke(barcode: String): Product? {
-        return repository.getProduct(barcode)
+        return repository.getProductApi(barcode)
     }
 }

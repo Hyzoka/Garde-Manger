@@ -5,16 +5,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.garde.domain.usecase.ExtractExpirationDateUseCase
 import com.garde.domain.usecase.GetProductUseCase
+import com.garde.domain.usecase.SaveProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.security.PrivateKey
 import javax.inject.Inject
 
 @HiltViewModel
 class AddProductViewModel @Inject constructor(
     private val getProductUseCase: GetProductUseCase,
-    private val extractExpirationDateUseCase: ExtractExpirationDateUseCase
+    private val extractExpirationDateUseCase: ExtractExpirationDateUseCase,
+    private val saveProductUseCase: SaveProductUseCase,
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(AddProductViewState())
@@ -61,11 +64,19 @@ class AddProductViewModel @Inject constructor(
         viewModelScope.launch {
             val barcode = _viewState.value.scannedBarcode ?: return@launch
             val expirationDate = _viewState.value.expirationDate ?: return@launch
-            //saveProductUseCase(barcode, expirationDate)
-            _viewState.value = _viewState.value.copy(
-                step = AddProductStep.ScanBarcode,
-                isBottomSheetVisible = false
-            )
+
+            val product = _viewState.value.product
+            if (product != null) {
+                saveProductUseCase(
+                    barcode = barcode,
+                    name = product.name ?: "Unknown",
+                    brand = product.brand,
+                    imageUrl = product.imageUrl,
+                    expirationDate = expirationDate
+                )
+                _viewState.value = _viewState.value.copy(step = AddProductStep.Saved)
+            }
         }
     }
+
 }

@@ -8,17 +8,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +48,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.garde.core.R
+import com.garde.manger.ui.components.TopBarComponent
 import com.garde.presentation.component.CameraView
 import com.garde.presentation.component.DrawBarcode
 import com.garde.presentation.utils.BarcodeScanningAnalyzer
@@ -74,6 +78,11 @@ fun AddProductScreen(
     val cameraPermissionState =
         rememberPermissionState(permission = Manifest.permission.CAMERA)
 
+    LaunchedEffect(viewState.step) {
+        if (viewState.step == AddProductStep.Saved) {
+            navController.popBackStack()
+        }
+    }
 
     PermissionRequired(
         permissionState = cameraPermissionState,
@@ -88,49 +97,65 @@ fun AddProductScreen(
             }
         },
         content = {
-            Box(modifier = Modifier.fillMaxSize()) {
-                // 📌 Caméra toujours active
-                CameraView(
-                    context = context,
-                    lifecycleOwner = lifecycleOwner,
-                    analyzer = MultiAnalyzer(
-                        barcodeAnalyzer = BarcodeScanningAnalyzer { barcodes, width, height ->
-                            detectedBarcode.clear()
-                            detectedBarcode.addAll(barcodes)
-                            imageWidth.intValue = width
-                            imageHeight.intValue = height
-
-                            if (barcodes.isNotEmpty()) {
-                                val barcodeValue = barcodes.first().displayValue ?: ""
-                                viewModel.fetchProduct(barcodeValue)
-                            }
-                        },
-                        textAnalyzer = TextRecognitionAnalyzer { text ->
-                            if (text != extractedText.value && text.isNotBlank()) {
-                                viewModel.processScannedText(text)
-                            }
-                        },
-                        stepProvider = { viewState.step }
-                    )
+            Scaffold(topBar = {
+                TopBarComponent(
+                    titleResId = R.string.add_product_title,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "back",
+                            tint = Color.White
+                        )
+                    },
+                    onIconClick = { navController.popBackStack() }
                 )
 
-                if (viewState.step == AddProductStep.ScanBarcode)
-                    DrawBarcode(
-                        barcodes = detectedBarcode,
-                        imageWidth = imageWidth.intValue,
-                        imageHeight = imageHeight.intValue,
-                        screenWidth = screenWidth.intValue,
-                        screenHeight = screenHeight.intValue
+            }) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    // 📌 Caméra toujours active
+                    CameraView(
+                        context = context,
+                        lifecycleOwner = lifecycleOwner,
+                        analyzer = MultiAnalyzer(
+                            barcodeAnalyzer = BarcodeScanningAnalyzer { barcodes, width, height ->
+                                detectedBarcode.clear()
+                                detectedBarcode.addAll(barcodes)
+                                imageWidth.intValue = width
+                                imageHeight.intValue = height
+
+                                if (barcodes.isNotEmpty()) {
+                                    val barcodeValue = barcodes.first().displayValue ?: ""
+                                    viewModel.fetchProduct(barcodeValue)
+                                }
+                            },
+                            textAnalyzer = TextRecognitionAnalyzer { text ->
+                                if (text != extractedText.value && text.isNotBlank()) {
+                                    viewModel.processScannedText(text)
+                                }
+                            },
+                            stepProvider = { viewState.step }
+                        )
                     )
 
-                // 📌 Affichage de la BottomSheet uniquement quand elle doit être visible
-                if (viewState.isBottomSheetVisible) {
-                    ModalBottomSheet(
-                        onDismissRequest = { /* Empêcher la fermeture manuelle */ }
-                    ) {
-                        ProductBottomSheetContent(viewState, viewModel)
+                    if (viewState.step == AddProductStep.ScanBarcode)
+                        DrawBarcode(
+                            barcodes = detectedBarcode,
+                            imageWidth = imageWidth.intValue,
+                            imageHeight = imageHeight.intValue,
+                            screenWidth = screenWidth.intValue,
+                            screenHeight = screenHeight.intValue
+                        )
+
+                    // 📌 Affichage de la BottomSheet uniquement quand elle doit être visible
+                    if (viewState.isBottomSheetVisible) {
+                        ModalBottomSheet(
+                            onDismissRequest = { /* Empêcher la fermeture manuelle */ }
+                        ) {
+                            ProductBottomSheetContent(viewState, viewModel)
+                        }
                     }
                 }
+
             }
 
         }

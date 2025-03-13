@@ -9,5 +9,6 @@
     <string name="not_available">Non disponible</string>
     <string name="save_product">Enregistrer le produit</string>
     <string name="unknow_name">Nom inconnu</string>
+    <string name="add_product_title">Ajouter un produit</string>
 
 </resources>

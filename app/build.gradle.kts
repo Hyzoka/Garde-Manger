@@ -54,6 +54,11 @@ dependencies {
     implementation(project(":presentation"))
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler)
+
     implementation(libs.timber)
     implementation(libs.hilt.compose.navigation)
     testImplementation(libs.junit)

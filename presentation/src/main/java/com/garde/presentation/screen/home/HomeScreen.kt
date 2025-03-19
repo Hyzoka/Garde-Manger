@@ -1,4 +1,4 @@
-package com.garde.presentation.screen
+package com.garde.presentation.screen.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.garde.presentation.navigation.Screen
 
@@ -20,18 +19,12 @@ fun HomeScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Button(onClick = {
-                navController.navigate(Screen.TextRecognition.route)
-
-            }) {
-                Text(text = "Text Recognition")
-            }
-            Button(onClick = {
-                navController.navigate(Screen.BarcodeScanning.route)
+                navController.navigate(Screen.AddNewProduct.route)
             }) {
                 Text(text = "Barcode Scanning")
             }

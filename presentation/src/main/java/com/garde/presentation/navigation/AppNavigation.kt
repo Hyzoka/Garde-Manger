@@ -1,32 +1,47 @@
 package com.garde.presentation.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.garde.presentation.screen.HomeScreen
-import com.garde.presentation.screen.TextRecognitionScreen
 import com.garde.presentation.screen.addproduct.AddProductScreen
+import com.garde.presentation.screen.home.ProductListScreen
 
 internal sealed class Screen(val route: String) {
     object Home : Screen("home")
-    object TextRecognition : Screen("text_recognition")
-    object BarcodeScanning : Screen("barcode_scanning")
+    object ProductList : Screen("product_list")
+    object AddNewProduct : Screen("add_new_product")
 
 }
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(navController, startDestination = Screen.Home.route) {
-        composable(route = Screen.Home.route) {
-            HomeScreen(navController)
+    NavHost(
+        navController = navController,
+        startDestination = Screen.ProductList.route
+    ) {
+        composable(route = Screen.ProductList.route) {
+            ProductListScreen(navController = navController)
         }
-        composable(route = Screen.TextRecognition.route) {
-            TextRecognitionScreen(navController)
-        }
-        composable(route = Screen.BarcodeScanning.route) {
-            AddProductScreen(navController)
+        composable(
+            route = Screen.AddNewProduct.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            AddProductScreen(navController = navController)
         }
     }
 }

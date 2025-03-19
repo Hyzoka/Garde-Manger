@@ -10,7 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.security.PrivateKey
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,10 +59,15 @@ class AddProductViewModel @Inject constructor(
         )
     }
 
+    fun updateQuantity(newQuantity: Int) {
+        _viewState.value = _viewState.value.copy(quantity = newQuantity)
+    }
+
     fun saveProduct() {
         viewModelScope.launch {
             val barcode = _viewState.value.scannedBarcode ?: return@launch
             val expirationDate = _viewState.value.expirationDate ?: return@launch
+            val quantity = _viewState.value.quantity.takeIf { it > 0 } ?: 1 // ✅ Par défaut à 1
 
             val product = _viewState.value.product
             if (product != null) {
@@ -72,11 +76,13 @@ class AddProductViewModel @Inject constructor(
                     name = product.name ?: "Unknown",
                     brand = product.brand,
                     imageUrl = product.imageUrl,
-                    expirationDate = expirationDate
+                    expirationDate = expirationDate,
+                    quantity = quantity
                 )
                 _viewState.value = _viewState.value.copy(step = AddProductStep.Saved)
             }
         }
     }
+
 
 }

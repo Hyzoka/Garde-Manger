@@ -1,13 +1,13 @@
-package com.garde.di
+package com.garde.domain.di
 
 import android.content.Context
+import androidx.room.Room
 import com.garde.domain.database.ProductDatabase
 import com.garde.domain.local.ProductDao
-import com.garde.domain.repo.ProductRepository
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -17,8 +17,12 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(context: Context): ProductDatabase {
-        return ProductDatabase.getInstance(context)
+    fun provideDatabase(@ApplicationContext context: Context): ProductDatabase {
+        return Room.databaseBuilder(
+            context.applicationContext,
+            ProductDatabase::class.java,
+            "product_database"
+        ).build()
     }
 
     @Provides
@@ -27,12 +31,3 @@ object DatabaseModule {
     }
 }
 
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
-
-    @Binds
-    abstract fun bindProductRepository(
-        impl: ProductRepository
-    ): ProductRepository
-}

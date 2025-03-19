@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
     id("org.jetbrains.kotlin.kapt")
-
 }
 
 android {
@@ -44,7 +43,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    kapt(libs.hilt.compiler) // ✅ Utilisation du bon alias
+    kapt(libs.room.compiler)
     implementation(libs.coroutine)
     implementation(libs.timber)
     implementation(libs.coroutine.core)
@@ -52,6 +52,5 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    kapt(libs.room.compiler)
 
 }

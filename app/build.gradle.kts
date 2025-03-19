@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(project(":presentation"))
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    kapt(libs.hilt.compiler) // ✅ Utilisation du bon alias
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)

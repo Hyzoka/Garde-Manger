@@ -12,14 +12,16 @@ class SaveProductUseCase @Inject constructor(
         name: String,
         brand: String?,
         imageUrl: String?,
-        expirationDate: String?
+        expirationDate: String?,
+        quantity: Int
     ) {
         val product = ProductEntity(
             barcode = barcode,
             name = name,
             brand = brand,
             imageUrl = imageUrl,
-            expirationDate = expirationDate
+            expirationDate = expirationDate,
+            quantity = quantity
         )
         repository.saveProduct(product)
     }

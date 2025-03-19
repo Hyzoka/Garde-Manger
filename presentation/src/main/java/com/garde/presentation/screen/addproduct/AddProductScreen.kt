@@ -2,7 +2,6 @@ package com.garde.presentation.screen.addproduct
 
 import android.Manifest
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,13 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,20 +35,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.garde.core.R
-import com.garde.manger.ui.components.TopBarComponent
-import com.garde.presentation.component.CameraView
-import com.garde.presentation.component.DrawBarcode
+import com.garde.presentation.component.TopBarComponent
+import com.garde.presentation.component.scan.CameraView
+import com.garde.presentation.component.scan.DrawBarcode
 import com.garde.presentation.utils.BarcodeScanningAnalyzer
 import com.garde.presentation.utils.MultiAnalyzer
 import com.garde.presentation.utils.TextRecognitionAnalyzer
@@ -100,19 +97,11 @@ fun AddProductScreen(
             Scaffold(topBar = {
                 TopBarComponent(
                     titleResId = R.string.add_product_title,
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "back",
-                            tint = Color.White
-                        )
-                    },
                     onIconClick = { navController.popBackStack() }
                 )
 
             }) { padding ->
                 Box(modifier = Modifier.padding(padding)) {
-                    // 📌 Caméra toujours active
                     CameraView(
                         context = context,
                         lifecycleOwner = lifecycleOwner,
@@ -163,6 +152,7 @@ fun AddProductScreen(
 }
 
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProductBottomSheetContent(
     viewState: AddProductViewState,
@@ -177,29 +167,15 @@ fun ProductBottomSheetContent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            viewState.product?.imageUrl?.let { imageUrl ->
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Image du produit",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            } ?: Image(
-                painter = painterResource(id = R.drawable.placeholder),
-                contentDescription = "Placeholder",
+            GlideImage(
+                model = viewState.product?.imageUrl,
+                contentDescription = "Image du produit",
                 modifier = Modifier
                     .size(100.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
-
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
@@ -234,6 +210,21 @@ fun ProductBottomSheetContent(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedTextField(
+                value = viewState.quantity.toString(),
+                onValueChange = { newValue ->
+                    viewModel.updateQuantity(newValue.toIntOrNull()?.coerceAtLeast(1) ?: 1)
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
 
         // 📌 Boutons pour scanner la date ou enregistrer le produit

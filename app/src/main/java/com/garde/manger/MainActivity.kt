@@ -15,7 +15,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Log.d("AZEZAE", "onCreate: Setting content")
             AppNavigation()
         }
     }

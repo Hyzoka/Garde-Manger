@@ -1,4 +1,4 @@
-package com.garde.presentation.component
+package com.garde.presentation.component.scan
 
 import android.graphics.PointF
 import androidx.compose.foundation.Canvas

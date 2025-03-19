@@ -59,18 +59,38 @@ class AddProductViewModel @Inject constructor(
         )
     }
 
-    fun updateQuantity(newQuantity: Int) {
-        _viewState.value = _viewState.value.copy(quantity = newQuantity)
+
+    fun updateQuantity(newQuantity: String) {
+        if (newQuantity.toIntOrNull() != null) {
+            if (newQuantity.toIntOrNull() == 0) {
+                _viewState.value = _viewState.value.copy(quantity = "1", isQuantityError = false)
+            } else {
+                _viewState.value =
+                    _viewState.value.copy(quantity = newQuantity, isQuantityError = false)
+            }
+        } else {
+            _viewState.value = _viewState.value.copy(quantity = "", isQuantityError = true)
+        }
+        validateForm()
+    }
+
+    private fun validateForm() {
+        val state = _viewState.value
+        val isValid = state.scannedBarcode != null &&
+                state.expirationDate != null &&
+                state.quantity.toIntOrNull()?.let { it > 0 } ?: false
+
+        _viewState.value = state.copy(isSaveEnabled = isValid)
     }
 
     fun saveProduct() {
-        viewModelScope.launch {
-            val barcode = _viewState.value.scannedBarcode ?: return@launch
-            val expirationDate = _viewState.value.expirationDate ?: return@launch
-            val quantity = _viewState.value.quantity.takeIf { it > 0 } ?: 1 // ✅ Par défaut à 1
+        val state = _viewState.value
+        val barcode = state.scannedBarcode ?: return
+        val expirationDate = state.expirationDate ?: return
+        val quantity = state.quantity.toIntOrNull()?.takeIf { it > 0 } ?: return
 
-            val product = _viewState.value.product
-            if (product != null) {
+        state.product?.let { product ->
+            viewModelScope.launch {
                 saveProductUseCase(
                     barcode = barcode,
                     name = product.name ?: "Unknown",
@@ -79,10 +99,9 @@ class AddProductViewModel @Inject constructor(
                     expirationDate = expirationDate,
                     quantity = quantity
                 )
-                _viewState.value = _viewState.value.copy(step = AddProductStep.Saved)
+                _viewState.value =
+                    _viewState.value.copy(isBottomSheetVisible = false, step = AddProductStep.Saved)
             }
         }
     }
-
-
 }

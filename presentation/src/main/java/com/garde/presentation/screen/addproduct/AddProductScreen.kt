@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -173,7 +172,6 @@ fun ProductBottomSheetContent(
                     .size(100.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -217,13 +215,19 @@ fun ProductBottomSheetContent(
             Spacer(modifier = Modifier.width(8.dp))
 
             OutlinedTextField(
-                value = viewState.quantity.toString(),
+                value = viewState.quantity,
                 onValueChange = { newValue ->
-                    if (newValue.isNotBlank()) {
-                        viewModel.updateQuantity(newValue.toIntOrNull() ?: 1)
-                    }
+                        viewModel.updateQuantity(newValue)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                isError = viewState.isQuantityError,
+                supportingText = {
+                    if (viewState.isQuantityError) {
+                        Text("Veuillez entrer une quantité valide", color = Color.Red)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
             )
         }
         Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
@@ -239,7 +243,7 @@ fun ProductBottomSheetContent(
         } else {
             Button(
                 onClick = { viewModel.saveProduct() },
-                enabled = viewState.expirationDate.isNotEmpty(),
+                enabled = viewState.isSaveEnabled,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.save_product))

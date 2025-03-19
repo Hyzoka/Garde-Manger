@@ -135,7 +135,6 @@ fun AddProductScreen(
                             screenHeight = screenHeight.intValue
                         )
 
-                    // 📌 Affichage de la BottomSheet uniquement quand elle doit être visible
                     if (viewState.isBottomSheetVisible) {
                         ModalBottomSheet(
                             onDismissRequest = { /* Empêcher la fermeture manuelle */ }
@@ -210,7 +209,7 @@ fun ProductBottomSheetContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
@@ -220,7 +219,9 @@ fun ProductBottomSheetContent(
             OutlinedTextField(
                 value = viewState.quantity.toString(),
                 onValueChange = { newValue ->
-                    viewModel.updateQuantity(newValue.toIntOrNull()?.coerceAtLeast(1) ?: 1)
+                    if (newValue.isNotBlank()) {
+                        viewModel.updateQuantity(newValue.toIntOrNull() ?: 1)
+                    }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )

@@ -34,7 +34,7 @@ fun TopBarComponent(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .padding(16.dp)
     ) {
         IconButton(onClick = onIconClick) {
             icon()

@@ -6,9 +6,12 @@ import com.garde.domain.model.ProductEntity
 import com.garde.domain.usecase.GetProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,7 +22,16 @@ class ProductListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(ProductListViewState())
-    val viewState: StateFlow<ProductListViewState> = _viewState
+    val viewState: StateFlow<ProductListViewState>
+        get() = _viewState.map { productViewState ->
+            productViewState.copy(products = productViewState.products.filter { product ->
+                product.name.uppercase().contains(productViewState.searchText.trim().uppercase())
+            })
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = _viewState.value
+        )
 
     init {
         fetchProducts()
@@ -43,10 +55,17 @@ class ProductListViewModel @Inject constructor(
                 }
         }
     }
+
+    fun onSearchTextChange(text: String) {
+        _viewState.update {
+            it.copy(searchText = text)
+        }
+    }
 }
 
 data class ProductListViewState(
     val isLoading: Boolean = true,
     val products: List<ProductEntity> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val searchText: String = ""
 )

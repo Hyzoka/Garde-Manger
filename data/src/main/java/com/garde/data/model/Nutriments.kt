@@ -1,4 +1,4 @@
-package com.garde.domain.model
+package com.garde.data.model
 
 import com.google.gson.annotations.SerializedName
 

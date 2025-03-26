@@ -3,12 +3,16 @@ package com.garde.presentation.screen.addproduct
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.garde.domain.onError
+import com.garde.domain.onSuccess
 import com.garde.domain.usecase.ExtractExpirationDateUseCase
 import com.garde.domain.usecase.GetProductUseCase
 import com.garde.domain.usecase.SaveProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,14 +28,19 @@ class AddProductViewModel @Inject constructor(
 
     fun fetchProduct(barcode: String) {
         viewModelScope.launch {
-            val product = getProductUseCase(barcode)
-            if (product != null) {
-                _viewState.value = _viewState.value.copy(
-                    step = AddProductStep.Confirmation,
-                    scannedBarcode = barcode,
-                    product = product,
-                    isBottomSheetVisible = true
-                )
+            getProductUseCase.invoke(barcode).collectLatest { result ->
+                result
+                    .onSuccess { product ->
+                        Log.i("AddProductViewModel", "Product: $product")
+                        _viewState.value = _viewState.value.copy(
+                            product = product,
+                            step = AddProductStep.Confirmation,
+                            isBottomSheetVisible = true
+                        )
+                    }
+                    .onError { message ->
+                        Log.e("AddProductViewModel", "Error: $message")
+                    }
             }
         }
     }
@@ -39,8 +48,7 @@ class AddProductViewModel @Inject constructor(
     fun processScannedText(text: String) {
         viewModelScope.launch {
             Log.i("AddProductViewModel", "Scanned text: $text")
-
-            val detectedDate = extractExpirationDateUseCase(text)
+            val detectedDate = extractExpirationDateUseCase.invoke(text)
             if (detectedDate != null) {
                 Log.i("AddProductViewModel", "Detected expiration date: $detectedDate")
                 _viewState.value = _viewState.value.copy(
@@ -63,7 +71,8 @@ class AddProductViewModel @Inject constructor(
     fun updateQuantity(newQuantity: String) {
         if (newQuantity.toIntOrNull() != null) {
             if (newQuantity.toIntOrNull() == 0) {
-                _viewState.value = _viewState.value.copy(quantity = "1", isQuantityError = false)
+                _viewState.value =
+                    _viewState.value.copy(quantity = "1", isQuantityError = false)
             } else {
                 _viewState.value =
                     _viewState.value.copy(quantity = newQuantity, isQuantityError = false)
@@ -74,33 +83,32 @@ class AddProductViewModel @Inject constructor(
         validateForm()
     }
 
-    private fun validateForm() {
-        val state = _viewState.value
-        val isValid = state.scannedBarcode != null &&
-                state.expirationDate != null &&
-                state.quantity.toIntOrNull()?.let { it > 0 } ?: false
-
-        _viewState.value = state.copy(isSaveEnabled = isValid)
+    fun validateForm() {
+        _viewState.value.apply {
+            val isValid = scannedBarcode != null &&
+                    expirationDate != null &&
+                    quantity.toIntOrNull()?.let { it > 0 } ?: false
+            _viewState.update { it.copy(isSaveEnabled = isValid) }
+        }
     }
 
     fun saveProduct() {
-        val state = _viewState.value
-        val barcode = state.scannedBarcode ?: return
-        val expirationDate = state.expirationDate ?: return
-        val quantity = state.quantity.toIntOrNull()?.takeIf { it > 0 } ?: return
+        if (_viewState.value.isSaveEnabled) {
+            _viewState.value.product?.let { product ->
+                viewModelScope.launch {
+                    saveProductUseCase.invoke(product).collect { result ->
+                        Log.i("AddProductViewModel", "Product saved: $result")
+                        result.onSuccess {
+                            _viewState.value = _viewState.value.copy(
+                                step = AddProductStep.Saved,
+                                isBottomSheetVisible = false
+                            )
 
-        state.product?.let { product ->
-            viewModelScope.launch {
-                saveProductUseCase(
-                    barcode = barcode,
-                    name = product.name ?: "Unknown",
-                    brand = product.brand,
-                    imageUrl = product.imageUrl,
-                    expirationDate = expirationDate,
-                    quantity = quantity
-                )
-                _viewState.value =
-                    _viewState.value.copy(isBottomSheetVisible = false, step = AddProductStep.Saved)
+                        }.onError {
+                            Log.e("AddProductViewModel", "Error: $it")
+                        }
+                    }
+                }
             }
         }
     }

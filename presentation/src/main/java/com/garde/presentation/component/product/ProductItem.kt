@@ -23,12 +23,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.garde.domain.model.ProductEntity
+import com.garde.domain.model.Product
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProductItem(
-    product: ProductEntity,
+    product: Product,
     modifier: Modifier = Modifier,
     onClick: (String) -> Unit
 ) {
@@ -40,7 +40,7 @@ fun ProductItem(
         modifier = modifier
             .height(275.dp)
             .padding(4.dp)
-            .clickable { onClick(product.barcode) }
+            .clickable { onClick(product.id) }
     ) {
         Column(
             modifier = Modifier

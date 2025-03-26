@@ -2,7 +2,8 @@ package com.garde.presentation.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.garde.domain.model.ProductEntity
+import com.garde.domain.ResultState
+import com.garde.domain.model.Product
 import com.garde.domain.usecase.GetProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,8 +51,20 @@ class ProductListViewModel @Inject constructor(
                         )
                     }
                 }
-                .collect { products ->
-                    _viewState.update { it.copy(products = products, isLoading = false) }
+                .collect { result ->
+                    when (result) {
+                        is ResultState.Success -> {
+                            _viewState.update { it.copy(products = result.data, isLoading = false) }
+                        }
+
+                        is ResultState.Error -> {
+                            _viewState.update { it.copy(error = result.message, isLoading = false) }
+                        }
+
+                        is ResultState.Loading -> {
+                            _viewState.update { it.copy(isLoading = true) }
+                        }
+                    }
                 }
         }
     }
@@ -65,7 +78,8 @@ class ProductListViewModel @Inject constructor(
 
 data class ProductListViewState(
     val isLoading: Boolean = true,
-    val products: List<ProductEntity> = emptyList(),
+    val products: List<Product> = emptyList(),
     val error: String? = null,
     val searchText: String = ""
 )
+

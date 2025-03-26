@@ -13,11 +13,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.garde.domain.model.ProductEntity
+import com.garde.domain.model.Product
 
 @Composable
 fun ProductGrid(
-    products: List<ProductEntity>,
+    products: List<Product>,
     onProductClick: (String) -> Unit // ✅ Callback pour ouvrir les détails
 ) {
     LazyVerticalGrid(

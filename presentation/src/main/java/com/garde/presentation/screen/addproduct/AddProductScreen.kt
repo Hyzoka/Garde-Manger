@@ -80,6 +80,10 @@ fun AddProductScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.validateForm()
+    }
+
     PermissionRequired(
         permissionState = cameraPermissionState,
         permissionNotGrantedContent = {
@@ -217,7 +221,7 @@ fun ProductBottomSheetContent(
             OutlinedTextField(
                 value = viewState.quantity,
                 onValueChange = { newValue ->
-                        viewModel.updateQuantity(newValue)
+                    viewModel.updateQuantity(newValue)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,

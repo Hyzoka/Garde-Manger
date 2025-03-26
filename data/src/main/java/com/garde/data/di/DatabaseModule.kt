@@ -1,9 +1,9 @@
-package com.garde.domain.di
+package com.garde.data.di
 
 import android.content.Context
 import androidx.room.Room
-import com.garde.domain.database.ProductDatabase
-import com.garde.domain.local.ProductDao
+import com.garde.data.local.ProductDao
+import com.garde.data.local.ProductDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

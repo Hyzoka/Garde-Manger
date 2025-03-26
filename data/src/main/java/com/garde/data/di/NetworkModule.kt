@@ -1,7 +1,6 @@
-package com.garde.domain.di
+package com.garde.data.di
 
-import com.garde.domain.remote.OpenFoodFactsService
-import com.garde.domain.usecase.ExtractExpirationDateUseCase
+import com.garde.data.remote.OpenFoodFactsService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,7 +11,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DataModule {
+object NetworkModule {
 
     @Provides
     @Singleton
@@ -27,11 +26,5 @@ object DataModule {
     @Singleton
     fun provideOpenFoodFactsApi(retrofit: Retrofit): OpenFoodFactsService {
         return retrofit.create(OpenFoodFactsService::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideExtractExpirationDateUseCase(): ExtractExpirationDateUseCase {
-        return ExtractExpirationDateUseCase()
     }
 }

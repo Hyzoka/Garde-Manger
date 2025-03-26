@@ -36,21 +36,20 @@ android {
 
 dependencies {
 
+    //default
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler) // ✅ Utilisation du bon alias
-    kapt(libs.room.compiler)
-    implementation(libs.coroutine)
-    implementation(libs.timber)
-    implementation(libs.coroutine.core)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
 
+    //hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
+    //coroutine
+    implementation(libs.coroutine)
+    implementation(libs.coroutine.core)
+    
 }

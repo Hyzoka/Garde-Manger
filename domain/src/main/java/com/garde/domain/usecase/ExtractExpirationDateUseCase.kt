@@ -5,8 +5,9 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import javax.inject.Inject
 
-class ExtractExpirationDateUseCase {
+class ExtractExpirationDateUseCase @Inject constructor() {
 
     private val dateFormats = listOf(
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()),
@@ -43,7 +44,8 @@ class ExtractExpirationDateUseCase {
                         calendar.set(Calendar.YEAR, year + 2000)
                     }
 
-                    val formattedDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(calendar.time)
+                    val formattedDate =
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(calendar.time)
                     Log.i("ExtractExpirationDateUseCase", "Final formatted date: $formattedDate")
 
                     return formattedDate // ✅ Retourne la première date valide détectée

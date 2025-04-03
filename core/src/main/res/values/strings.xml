@@ -10,5 +10,9 @@
     <string name="save_product">Save the product</string>
     <string name="unknow_name">Unknown name</string>
     <string name="add_product_title">Add Product</string>
-
+    <string name="enable_permission">Please, enable camera permission</string>
+    <string name="retry">Retry</string>
+    <string name="barcode_detection_title">Bare code detection</string>
+    <string name="text_recognition_title">date of expiration detection</string>
+    <string name="search">search product</string>
 </resources>

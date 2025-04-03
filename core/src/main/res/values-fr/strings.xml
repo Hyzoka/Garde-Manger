@@ -10,5 +10,9 @@
     <string name="save_product">Enregistrer le produit</string>
     <string name="unknow_name">Nom inconnu</string>
     <string name="add_product_title">Ajouter un produit</string>
-
+    <string name="enable_permission">SVP, autorisez l\'accès à la caméra</string>
+    <string name="retry">Réesayer</string>
+    <string name="barcode_detection_title">Détection du code-bare</string>
+    <string name="text_recognition_title">détection de la date de péremption</string>
+    <string name="search">Recherche du product</string>
 </resources>

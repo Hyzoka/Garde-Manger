@@ -22,6 +22,6 @@ dependencyResolutionManagement {
 rootProject.name = "Garde-Manger"
 include(":app")
 include(":domain")
-include(":presentation")
+include(":feature")
 include(":core")
 include(":data")

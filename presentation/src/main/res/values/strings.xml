@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="barcode_detection_title">Bare code detection</string>
-    <string name="text_recognition_title">text detection</string>
-    <string name="search">search product</string>
-</resources>

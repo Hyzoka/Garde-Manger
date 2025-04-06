@@ -27,9 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,7 +65,7 @@ import com.test.add_product.utils.BarcodeScanningAnalyzer
 import com.test.add_product.utils.MultiAnalyzer
 import com.test.add_product.utils.TextRecognitionAnalyzer
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AddProductScreen(
     onPopBackStack: () -> Unit,
@@ -135,7 +133,11 @@ fun AddProductScreen(
                 )
 
             }) { padding ->
-                Box(modifier = Modifier.navigationBarsPadding().padding(padding)) {
+                Box(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(padding)
+                ) {
                     CameraView(
                         context = context,
                         lifecycleOwner = lifecycleOwner,
@@ -169,20 +171,27 @@ fun AddProductScreen(
                             screenHeight = screenHeight.intValue
                         )
 
-                    ModalBottomSheet(
-
-                        onDismissRequest = { }
-                    ) {
-                        when (step) {
-                            AddProductStepViewState.ScanProduct -> {
-                                // Nothing to display
-                            }
-                            AddProductStepViewState.SelectQuantity -> ProductBottomSheetContent(productState, step, viewModel)
-                            AddProductStepViewState.ScanExpirationDate ->{
-                                // Nothing to display
-                            }
-                            AddProductStepViewState.ConfirmProduct ->  ProductBottomSheetContent(productState, step, viewModel)
+                    when (step) {
+                        AddProductStepViewState.ScanProduct -> {
+                            // Nothing to display
                         }
+
+                        AddProductStepViewState.SelectQuantity -> DisplayModalProductBottomSheet(
+                            productState,
+                            step,
+                            viewModel
+                        )
+
+
+                        AddProductStepViewState.ScanExpirationDate -> {
+                            // Nothing to display
+                        }
+
+                        AddProductStepViewState.ConfirmProduct -> DisplayModalProductBottomSheet(
+                            productState,
+                            step,
+                            viewModel
+                        )
 
                     }
                 }
@@ -191,6 +200,22 @@ fun AddProductScreen(
     )
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DisplayModalProductBottomSheet(
+    productState: AddProductViewState,
+    step: AddProductStepViewState,
+    viewModel: AddProductViewModel
+) {
+    ModalBottomSheet(onDismissRequest = { viewModel.resetProduct() }) {
+        ProductBottomSheetContent(
+            productState,
+            step,
+            viewModel
+        )
+    }
+}
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -242,7 +267,8 @@ fun ProductBottomSheetContent(
                 Text(
                     text = stringResource(
                         R.string.expiration_date,
-                        productState.product?.expirationDate ?: stringResource(R.string.not_available)
+                        productState.product?.expirationDate
+                            ?: stringResource(R.string.not_available)
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (productState.product?.expirationDate == null) Color.Red else Color.Black
@@ -256,6 +282,8 @@ fun ProductBottomSheetContent(
             AddProductStepViewState.ScanProduct -> {
                 // Nothing to do
             }
+
+
             AddProductStepViewState.SelectQuantity -> {
                 var quantity by rememberSaveable { mutableStateOf("1") }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -276,7 +304,9 @@ fun ProductBottomSheetContent(
                                 Text("Veuillez entrer une quantité valide", color = Color.Red)
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().imePadding()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .imePadding()
                     )
                 }
 
@@ -291,11 +321,17 @@ fun ProductBottomSheetContent(
                     Text(stringResource(R.string.scan_expiration_date))
                 }
             }
+
             AddProductStepViewState.ScanExpirationDate -> {
                 // Nothing to do
             }
+
             AddProductStepViewState.ConfirmProduct -> {
-                var quantity by rememberSaveable { mutableStateOf(productState.product?.quantity?.toString().orEmpty()) }
+                var quantity by rememberSaveable {
+                    mutableStateOf(
+                        productState.product?.quantity?.toString().orEmpty()
+                    )
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
 
@@ -314,15 +350,16 @@ fun ProductBottomSheetContent(
                                 Text("Veuillez entrer une quantité valide", color = Color.Red)
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().imePadding()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .imePadding()
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
 
                 Button(
-                    onClick = { viewModel.saveProduct() },
-                    // enabled = viewState.isSaveEnabled,
+                    onClick = { viewModel.updateQuantity(quantity, true) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.save_product))

@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.garde.domain.repo.ProductRepository
 import com.garde.domain.usecase.ExtractExpirationDateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -24,7 +22,8 @@ class AddProductViewModel @Inject constructor(
     private val extractExpirationDateUseCase: ExtractExpirationDateUseCase,
 ) : ViewModel() {
 
-    private val productIntent = AddProductIntent(repository)
+    private var lastScannedBarcode: String? = null
+    private var lastScanTime: Long = 0L
 
     private val _productState = MutableStateFlow(AddProductViewState())
     val productState: StateFlow<AddProductViewState> = _productState
@@ -50,18 +49,22 @@ class AddProductViewModel @Inject constructor(
     val closeScreen: SharedFlow<Unit>
         get() = _closeScreen
 
-    private var fetchingProductJob: Job? = null
-
     fun fetchProduct(barcode: String) {
-        fetchingProductJob?.cancel()
-        fetchingProductJob = viewModelScope.launch {
-            delay(500)
-            val stateWithProduct = productIntent.intent(
-                intent = AddProductIntentInterface.GetProduct(barcode = barcode),
-                state = productState.value
-            )
-            _productState.update { stateWithProduct }
+        val currentTime = System.currentTimeMillis()
+        if (barcode != lastScannedBarcode || currentTime - lastScanTime > 10_000L) {
+            lastScannedBarcode = barcode
+            lastScanTime = currentTime
+            viewModelScope.launch {
+                repository.getProductByBarcode(barcode)
+                    .onSuccess { product ->
+                        _productState.update { it.copy(product = product.copy(quantity = null)) }
+                    }
+                    .onFailure {
+                        println("Save product failed : $it")
+                    }
+            }
         }
+
     }
 
     fun handleExpirationDate(expirationDate: String) {
@@ -73,7 +76,7 @@ class AddProductViewModel @Inject constructor(
         }
     }
 
-    fun updateQuantity(newQuantityText: String) {
+    fun updateQuantity(newQuantityText: String, saveProduct: Boolean = false) {
         val newQuantity = newQuantityText.toIntOrNull()
 
         if (newQuantity == null || newQuantity == 0) {
@@ -85,13 +88,22 @@ class AddProductViewModel @Inject constructor(
                     product = it.product?.copy(quantity = newQuantity.toInt())
                 )
             }
+            if (saveProduct) {
+                saveProduct()
+            }
         }
     }
 
-    fun saveProduct() {
+    fun resetProduct() {
+        _productState.update { it.copy(product = null) }
+    }
+
+    private fun saveProduct() {
         _productState.value.product?.let { product ->
             viewModelScope.launch {
-                repository.saveProduct(product = product)
+                repository.saveProduct(
+                    product = product
+                )
                     .onSuccess {
                         _closeScreen.emit(Unit)
                     }

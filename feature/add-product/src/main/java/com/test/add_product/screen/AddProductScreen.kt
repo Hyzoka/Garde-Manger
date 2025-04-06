@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,15 +27,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,18 +51,18 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.navigation.NavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.garde.component.MessageView
 import com.garde.component.TopBarComponent
-import com.test.add_product.component.CameraView
-import com.test.add_product.component.DrawBarcode
 import com.garde.core.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.common.Barcode
+import com.test.add_product.component.CameraView
+import com.test.add_product.component.DrawBarcode
 import com.test.add_product.utils.BarcodeScanningAnalyzer
 import com.test.add_product.utils.MultiAnalyzer
 import com.test.add_product.utils.TextRecognitionAnalyzer
@@ -65,10 +70,11 @@ import com.test.add_product.utils.TextRecognitionAnalyzer
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun AddProductScreen(
-    navController: NavController,
+    onPopBackStack: () -> Unit,
     viewModel: AddProductViewModel = hiltViewModel()
 ) {
-    val viewState by viewModel.viewState.collectAsState()
+    val productState by viewModel.productState.collectAsStateWithLifecycle()
+    val step by viewModel.step.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -81,14 +87,10 @@ fun AddProductScreen(
     val cameraPermissionState =
         rememberPermissionState(permission = Manifest.permission.CAMERA)
 
-    LaunchedEffect(viewState.step) {
-        if (viewState.step == AddProductStep.Saved) {
-            navController.popBackStack()
-        }
-    }
-
     LaunchedEffect(Unit) {
-        viewModel.validateForm()
+        viewModel.closeScreen.collect {
+            onPopBackStack()
+        }
     }
 
     PermissionRequired(
@@ -107,7 +109,7 @@ fun AddProductScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TopBarComponent { navController.popBackStack() }
+                    TopBarComponent { onPopBackStack() }
 
                     Spacer(Modifier.weight(1f))
 
@@ -129,11 +131,11 @@ fun AddProductScreen(
             Scaffold(topBar = {
                 TopBarComponent(
                     titleResId = R.string.add_product_title,
-                    onIconClick = { navController.popBackStack() }
+                    onIconClick = { onPopBackStack() }
                 )
 
             }) { padding ->
-                Box(modifier = Modifier.padding(padding)) {
+                Box(modifier = Modifier.navigationBarsPadding().padding(padding)) {
                     CameraView(
                         context = context,
                         lifecycleOwner = lifecycleOwner,
@@ -151,14 +153,14 @@ fun AddProductScreen(
                             },
                             textAnalyzer = TextRecognitionAnalyzer { text ->
                                 if (text != extractedText.value && text.isNotBlank()) {
-                                    viewModel.processScannedText(text)
+                                    viewModel.handleExpirationDate(text)
                                 }
                             },
-                            stepProvider = { viewState.step }
+                            stepProvider = { step }
                         )
                     )
 
-                    if (viewState.step == AddProductStep.ScanBarcode)
+                    if (step == AddProductStepViewState.ScanProduct)
                         DrawBarcode(
                             barcodes = detectedBarcode,
                             imageWidth = imageWidth.intValue,
@@ -167,17 +169,24 @@ fun AddProductScreen(
                             screenHeight = screenHeight.intValue
                         )
 
-                    if (viewState.isBottomSheetVisible) {
-                        ModalBottomSheet(
-                            onDismissRequest = { /* Empêcher la fermeture manuelle */ }
-                        ) {
-                            ProductBottomSheetContent(viewState, viewModel)
+                    ModalBottomSheet(
+
+                        onDismissRequest = { }
+                    ) {
+                        when (step) {
+                            AddProductStepViewState.ScanProduct -> {
+                                // Nothing to display
+                            }
+                            AddProductStepViewState.SelectQuantity -> ProductBottomSheetContent(productState, step, viewModel)
+                            AddProductStepViewState.ScanExpirationDate ->{
+                                // Nothing to display
+                            }
+                            AddProductStepViewState.ConfirmProduct ->  ProductBottomSheetContent(productState, step, viewModel)
                         }
+
                     }
                 }
-
             }
-
         }
     )
 }
@@ -186,7 +195,8 @@ fun AddProductScreen(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProductBottomSheetContent(
-    viewState: AddProductViewState,
+    productState: AddProductViewState,
+    step: AddProductStepViewState,
     viewModel: AddProductViewModel
 ) {
     Column(
@@ -199,7 +209,7 @@ fun ProductBottomSheetContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             GlideImage(
-                model = viewState.product?.imageUrl,
+                model = productState.product?.imageUrl,
                 contentDescription = "Image du produit",
                 modifier = Modifier
                     .size(100.dp)
@@ -210,7 +220,7 @@ fun ProductBottomSheetContent(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = viewState.product?.name ?: stringResource(R.string.unknow_name),
+                    text = productState.product?.name ?: stringResource(R.string.unknow_name),
                     style = MaterialTheme.typography.titleLarge,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -221,7 +231,7 @@ fun ProductBottomSheetContent(
                 Text(
                     text = stringResource(
                         R.string.brand,
-                        viewState.product?.brand ?: stringResource(R.string.not_available)
+                        productState.product?.brand ?: stringResource(R.string.not_available)
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
@@ -232,54 +242,91 @@ fun ProductBottomSheetContent(
                 Text(
                     text = stringResource(
                         R.string.expiration_date,
-                        viewState.expirationDate ?: stringResource(R.string.not_available)
+                        productState.product?.expirationDate ?: stringResource(R.string.not_available)
                     ),
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (viewState.expirationDate == null) Color.Red else Color.Black
+                    color = if (productState.product?.expirationDate == null) Color.Red else Color.Black
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            OutlinedTextField(
-                value = viewState.quantity,
-                onValueChange = { newValue ->
-                    viewModel.updateQuantity(newValue)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                isError = viewState.isQuantityError,
-                supportingText = {
-                    if (viewState.isQuantityError) {
-                        Text("Veuillez entrer une quantité valide", color = Color.Red)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
-
-        // 📌 Boutons pour scanner la date ou enregistrer le produit
-        if (viewState.expirationDate == null) {
-            Button(
-                onClick = { viewModel.startExpirationDateScan() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.scan_expiration_date))
+        when (step) {
+            AddProductStepViewState.ScanProduct -> {
+                // Nothing to do
             }
-        } else {
-            Button(
-                onClick = { viewModel.saveProduct() },
-                enabled = viewState.isSaveEnabled,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.save_product))
+            AddProductStepViewState.SelectQuantity -> {
+                var quantity by rememberSaveable { mutableStateOf("1") }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    OutlinedTextField(
+                        value = quantity,
+                        onValueChange = { newValue ->
+                            quantity = newValue
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        isError = productState.isQuantityError,
+                        supportingText = {
+                            if (productState.isQuantityError) {
+                                Text("Veuillez entrer une quantité valide", color = Color.Red)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().imePadding()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
+
+                Button(
+                    onClick = {
+                        viewModel.updateQuantity(quantity)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.scan_expiration_date))
+                }
+            }
+            AddProductStepViewState.ScanExpirationDate -> {
+                // Nothing to do
+            }
+            AddProductStepViewState.ConfirmProduct -> {
+                var quantity by rememberSaveable { mutableStateOf(productState.product?.quantity?.toString().orEmpty()) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    OutlinedTextField(
+                        value = quantity,
+                        onValueChange = { newValue ->
+                            quantity = newValue
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        isError = productState.isQuantityError,
+                        supportingText = {
+                            if (productState.isQuantityError) {
+                                Text("Veuillez entrer une quantité valide", color = Color.Red)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().imePadding()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp)) // Espacement avant les boutons
+
+                Button(
+                    onClick = { viewModel.saveProduct() },
+                    // enabled = viewState.isSaveEnabled,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.save_product))
+                }
             }
         }
     }

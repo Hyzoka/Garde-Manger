@@ -20,6 +20,8 @@ fun NavGraphBuilder.addProductsGraph(navController: NavHostController) {
             animationSpec = tween(500)
         )
     }) {
-        AddProductScreen(navController)
+        AddProductScreen(onPopBackStack = {
+            navController.popBackStack()
+        })
     }
 }

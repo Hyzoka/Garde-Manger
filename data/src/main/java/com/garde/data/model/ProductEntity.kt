@@ -32,6 +32,6 @@ fun Product.toEntity(): ProductEntity {
         brand = brand,
         imageUrl = imageUrl,
         expirationDate = expirationDate,
-        quantity = quantity
+        quantity = quantity ?: error("No quantity specified in the product")
     )
 }

@@ -1,114 +1,115 @@
 package com.test.add_product.screen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.garde.domain.onError
-import com.garde.domain.onSuccess
+import com.garde.domain.repo.ProductRepository
 import com.garde.domain.usecase.ExtractExpirationDateUseCase
-import com.garde.domain.usecase.GetProductUseCase
-import com.garde.domain.usecase.SaveProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AddProductViewModel @Inject constructor(
-    private val getProductUseCase: GetProductUseCase,
+    private val repository: ProductRepository,
     private val extractExpirationDateUseCase: ExtractExpirationDateUseCase,
-    private val saveProductUseCase: SaveProductUseCase,
 ) : ViewModel() {
 
-    private val _viewState = MutableStateFlow(AddProductViewState())
-    val viewState: StateFlow<AddProductViewState> = _viewState
+    private var lastScannedBarcode: String? = null
+    private var lastScanTime: Long = 0L
+
+    private val _productState = MutableStateFlow(AddProductViewState())
+    val productState: StateFlow<AddProductViewState> = _productState
+
+    val step: StateFlow<AddProductStepViewState>
+        get() = _productState.map {
+            if (it.product == null) {
+                AddProductStepViewState.ScanProduct
+            } else if (it.product.quantity == null) {
+                AddProductStepViewState.SelectQuantity
+            } else if (it.product.expirationDate == null) {
+                AddProductStepViewState.ScanExpirationDate
+            } else {
+                AddProductStepViewState.ConfirmProduct
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            AddProductStepViewState.ScanProduct
+        )
+
+    private val _closeScreen = MutableSharedFlow<Unit>()
+    val closeScreen: SharedFlow<Unit>
+        get() = _closeScreen
 
     fun fetchProduct(barcode: String) {
-        viewModelScope.launch {
-            getProductUseCase.invoke(barcode).collectLatest { result ->
-                result
+        val currentTime = System.currentTimeMillis()
+        if (barcode != lastScannedBarcode || currentTime - lastScanTime > 10_000L) {
+            lastScannedBarcode = barcode
+            lastScanTime = currentTime
+            viewModelScope.launch {
+                repository.getProductByBarcode(barcode)
                     .onSuccess { product ->
-                        Log.i("AddProductViewModel", "Product: $product")
-                        _viewState.value = _viewState.value.copy(
-                            product = product,
-                            step = AddProductStep.Confirmation,
-                            isBottomSheetVisible = true
-                        )
+                        _productState.update { it.copy(product = product.copy(quantity = null)) }
                     }
-                    .onError { message ->
-                        Log.e("AddProductViewModel", "Error: $message")
+                    .onFailure {
+                        println("Save product failed : $it")
                     }
+            }
+        }
+
+    }
+
+    fun handleExpirationDate(expirationDate: String) {
+        viewModelScope.launch {
+            val detectedDate = extractExpirationDateUseCase.invoke(expirationDate)
+            if (detectedDate != null) {
+                _productState.update { it.copy(product = it.product?.copy(expirationDate = detectedDate)) }
             }
         }
     }
 
-    fun processScannedText(text: String) {
-        viewModelScope.launch {
-            Log.i("AddProductViewModel", "Scanned text: $text")
-            val detectedDate = extractExpirationDateUseCase.invoke(text)
-            if (detectedDate != null) {
-                Log.i("AddProductViewModel", "Detected expiration date: $detectedDate")
-                _viewState.value = _viewState.value.copy(
-                    step = AddProductStep.Confirmation,
-                    expirationDate = detectedDate,
-                    isBottomSheetVisible = true
+    fun updateQuantity(newQuantityText: String, saveProduct: Boolean = false) {
+        val newQuantity = newQuantityText.toIntOrNull()
+
+        if (newQuantity == null || newQuantity == 0) {
+            _productState.update { it.copy(isQuantityError = true) }
+        } else {
+            _productState.update {
+                it.copy(
+                    isQuantityError = false,
+                    product = it.product?.copy(quantity = newQuantity.toInt())
                 )
             }
-        }
-    }
-
-    fun startExpirationDateScan() {
-        _viewState.value = _viewState.value.copy(
-            step = AddProductStep.ScanExpirationDate,
-            isBottomSheetVisible = false
-        )
-    }
-
-
-    fun updateQuantity(newQuantity: String) {
-        if (newQuantity.toIntOrNull() != null) {
-            if (newQuantity.toIntOrNull() == 0) {
-                _viewState.value =
-                    _viewState.value.copy(quantity = "1", isQuantityError = false)
-            } else {
-                _viewState.value =
-                    _viewState.value.copy(quantity = newQuantity, isQuantityError = false)
+            if (saveProduct) {
+                saveProduct()
             }
-        } else {
-            _viewState.value = _viewState.value.copy(quantity = "", isQuantityError = true)
-        }
-        validateForm()
-    }
-
-    fun validateForm() {
-        _viewState.value.apply {
-            val isValid = scannedBarcode != null &&
-                    expirationDate != null &&
-                    quantity.toIntOrNull()?.let { it > 0 } ?: false
-            _viewState.update { it.copy(isSaveEnabled = isValid) }
         }
     }
 
-    fun saveProduct() {
-        if (_viewState.value.isSaveEnabled) {
-            _viewState.value.product?.let { product ->
-                viewModelScope.launch {
-                    saveProductUseCase.invoke(product).collect { result ->
-                        Log.i("AddProductViewModel", "Product saved: $result")
-                        result.onSuccess {
-                            _viewState.value = _viewState.value.copy(
-                                step = AddProductStep.Saved,
-                                isBottomSheetVisible = false
-                            )
+    fun resetProduct() {
+        _productState.update { it.copy(product = null) }
+    }
 
-                        }.onError {
-                            Log.e("AddProductViewModel", "Error: $it")
-                        }
+    private fun saveProduct() {
+        _productState.value.product?.let { product ->
+            viewModelScope.launch {
+                repository.saveProduct(
+                    product = product
+                )
+                    .onSuccess {
+                        _closeScreen.emit(Unit)
                     }
-                }
+                    .onFailure {
+                        println("Save product failed : $it")
+                    }
             }
         }
     }

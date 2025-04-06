@@ -4,10 +4,9 @@ import com.garde.domain.ResultState
 import com.garde.domain.model.Product
 import kotlinx.coroutines.flow.Flow
 
-
 interface ProductRepository {
-    fun getProductByBarcode(barcode: String): Flow<ResultState<Product>>
+    suspend fun getProductByBarcode(barcode: String): Result<Product>
     fun getProductDetailsById(id: Int): Flow<ResultState<Product>>
     fun getAllProducts(): Flow<ResultState<List<Product>>>
-    fun saveProduct(product: Product): Flow<ResultState<Unit>>
+    suspend fun saveProduct(product: Product): Result<Unit>
 }

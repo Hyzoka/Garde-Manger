@@ -6,5 +6,5 @@ data class Product(
     val brand: String?,
     val imageUrl: String?,
     val expirationDate: String?,
-    val quantity: Int
+    val quantity: Int?,
 )

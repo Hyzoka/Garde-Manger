@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ProductRepositoryImpl @Inject constructor(
@@ -22,21 +23,11 @@ class ProductRepositoryImpl @Inject constructor(
 ) : ProductRepository  {
 
     //fetch product from api with bare-code
-    override fun getProductByBarcode(barcode: String): Flow<ResultState<Product>> = flow {
-        emit(ResultState.Loading)
-        try {
-            val response = apiService.getProduct(barcode)
-            val product = response.product?.toDomain()
-
-            if (product != null) {
-                emit(ResultState.Success(product))
-            } else {
-                emit(ResultState.Error("Produit introuvable"))
-            }
-        } catch (e: Exception) {
-            emit(ResultState.Error(e.message ?: "Erreur inconnue"))
+    override suspend fun getProductByBarcode(barcode: String): Result<Product> = runCatching {
+        withContext(Dispatchers.IO) {
+            apiService.getProduct(barcode).product?.toDomain() ?: error("Product cannot be retrieved with barcode : $barcode")
         }
-    }.flowOn(Dispatchers.IO)
+    }
 
     override fun getProductDetailsById(id: Int): Flow<ResultState<Product>> {
         TODO("Not yet implemented")
@@ -52,17 +43,12 @@ class ProductRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun saveProduct(product: Product): Flow<ResultState<Unit>> = flow {
-        emit(ResultState.Loading)
-
-        val result = productDao.insertProduct(product.toEntity())
-        if (result == -1L) {
-            productDao.incrementQuantity(product.id, product.quantity)
+    override suspend fun saveProduct(product: Product): Result<Unit> = runCatching {
+        withContext(Dispatchers.IO) {
+            val result = productDao.insertProduct(product.toEntity())
+            if (result == -1L) {
+                productDao.incrementQuantity(product.id, product.quantity ?: error("No quantity specified for the product"))
+            }
         }
-
-        emit(ResultState.Success(Unit))
-    }.catch { e ->
-        emit(ResultState.Error(e.message ?: "Erreur inconnue"))
-    }.flowOn(Dispatchers.IO)
+    }
 }
-

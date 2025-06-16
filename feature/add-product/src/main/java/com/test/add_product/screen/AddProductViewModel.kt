@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddProductViewModel @Inject constructor(
-        private val repository: ProductRepository,
+    private val repository: ProductRepository,
     private val extractExpirationDateUseCase: ExtractExpirationDateUseCase,
     private val validateExpirationDateUseCase: ValidateExpirationDateUseCase
 ) : ViewModel() {
@@ -79,12 +79,9 @@ class AddProductViewModel @Inject constructor(
 
     fun handleExpirationDate(expirationDate: String) {
         viewModelScope.launch {
-            println("AZEAE Expiration date : $expirationDate")
             val detectedDate = extractExpirationDateUseCase.invoke(expirationDate)
-            println("AZEAE Detected date : $detectedDate")
             if (detectedDate != null) {
                 val validDate = validateExpirationDateUseCase.invoke(detectedDate)
-                println("AZEAE validDate : $validDate")
                 val errorMessage = when (validDate) {
                     DateValidationResult.InvalidDay -> R.string.error_invalid_day
                     DateValidationResult.InvalidMonth -> R.string.error_invalid_month
@@ -112,7 +109,7 @@ class AddProductViewModel @Inject constructor(
             } else {
                 _productState.update {
                     it.copy(
-                        showManualExpirationDateInput = true,
+                        errorDateFormatMessage = R.string.error_invalid_date
                     )
                 }
             }
@@ -123,6 +120,16 @@ class AddProductViewModel @Inject constructor(
         expirationScanStarted = false
         _productState.update {
             it.copy(showManualExpirationDateInput = false, errorDateFormatMessage = null)
+        }
+    }
+
+    fun editExpirationScan() {
+        _productState.update {
+            it.copy(
+                showManualExpirationDateInput = true,
+                errorDateFormatMessage = null,
+                product = it.product?.copy(expirationDate = null),
+            )
         }
     }
 

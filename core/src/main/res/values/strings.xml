@@ -16,6 +16,7 @@
     <string name="text_recognition_title">date of expiration detection</string>
     <string name="search">search product</string>
     <string name="quantity">Quantity</string>
+    <string name="edit">Edit</string>
 
     <string name="please_enter_valid_quantity">Please enter a valid quantity</string>
     <string name="please_enter_valid_date">Please enter a valid date</string>

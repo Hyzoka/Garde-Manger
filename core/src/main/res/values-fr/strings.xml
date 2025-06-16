@@ -16,7 +16,7 @@
     <string name="text_recognition_title">détection de la date de péremption</string>
     <string name="search">Recherche du product</string>
     <string name="quantity">Quantité :</string>
-
+    <string name="edit">Edit</string>
 
     <string name="please_enter_valid_quantity">Veuillez entrer une quantité valide</string>
     <string name="please_enter_valid_date">Veuillez entrer une date valide</string>

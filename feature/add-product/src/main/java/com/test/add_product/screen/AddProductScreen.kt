@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -269,15 +271,32 @@ fun ProductBottomSheetContent(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    text = stringResource(
-                        R.string.expiration_date,
-                        productState.product?.expirationDate
-                            ?: stringResource(R.string.not_available)
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (productState.product?.expirationDate == null) Color.Red else Color.Black
-                )
+                Row {
+                    Text(
+                        text = stringResource(
+                            R.string.expiration_date,
+                            productState.product?.expirationDate
+                                ?: stringResource(R.string.not_available)
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (productState.product?.expirationDate == null) Color.Red else Color.Black
+                    )
+                    productState.product?.expirationDate?.let {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            modifier = Modifier.clickable { viewModel.editExpirationScan() },
+                            text = stringResource(
+                                R.string.edit
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                    }
+
+
+                }
             }
         }
 
@@ -361,7 +380,10 @@ fun ProductBottomSheetContent(
                         isError = productState.isQuantityError,
                         supportingText = {
                             if (productState.isQuantityError) {
-                                Text("Veuillez entrer une quantité valide", color = Color.Red)
+                                Text(
+                                    stringResource(R.string.please_enter_valid_quantity),
+                                    color = Color.Red
+                                )
                             }
                         },
                         modifier = Modifier

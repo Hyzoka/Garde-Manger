@@ -2,8 +2,11 @@ package com.test.add_product.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.garde.core.R
 import com.garde.domain.repo.ProductRepository
 import com.garde.domain.usecase.ExtractExpirationDateUseCase
+import com.garde.domain.usecase.ValidateExpirationDateUseCase
+import com.garde.domain.utils.DateValidationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,26 +21,33 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddProductViewModel @Inject constructor(
-    private val repository: ProductRepository,
+        private val repository: ProductRepository,
     private val extractExpirationDateUseCase: ExtractExpirationDateUseCase,
+    private val validateExpirationDateUseCase: ValidateExpirationDateUseCase
 ) : ViewModel() {
 
     private var lastScannedBarcode: String? = null
     private var lastScanTime: Long = 0L
+    private var expirationScanStarted = false
+
 
     private val _productState = MutableStateFlow(AddProductViewState())
     val productState: StateFlow<AddProductViewState> = _productState
 
     val step: StateFlow<AddProductStepViewState>
         get() = _productState.map {
-            if (it.product == null) {
-                AddProductStepViewState.ScanProduct
-            } else if (it.product.quantity == null) {
-                AddProductStepViewState.SelectQuantity
-            } else if (it.product.expirationDate == null) {
-                AddProductStepViewState.ScanExpirationDate
-            } else {
-                AddProductStepViewState.ConfirmProduct
+            when {
+                it.product == null -> AddProductStepViewState.ScanProduct
+                it.product.quantity == null -> AddProductStepViewState.SelectQuantity
+                it.product.expirationDate == null -> {
+                    if (!expirationScanStarted) {
+                        expirationScanStarted = true
+                        startExpirationScanTimeout()
+                    }
+                    AddProductStepViewState.ScanExpirationDate
+                }
+
+                else -> AddProductStepViewState.ConfirmProduct
             }
         }.stateIn(
             viewModelScope,
@@ -69,15 +79,56 @@ class AddProductViewModel @Inject constructor(
 
     fun handleExpirationDate(expirationDate: String) {
         viewModelScope.launch {
+            println("AZEAE Expiration date : $expirationDate")
             val detectedDate = extractExpirationDateUseCase.invoke(expirationDate)
+            println("AZEAE Detected date : $detectedDate")
             if (detectedDate != null) {
-                _productState.update { it.copy(product = it.product?.copy(expirationDate = detectedDate)) }
+                val validDate = validateExpirationDateUseCase.invoke(detectedDate)
+                println("AZEAE validDate : $validDate")
+                val errorMessage = when (validDate) {
+                    DateValidationResult.InvalidDay -> R.string.error_invalid_day
+                    DateValidationResult.InvalidMonth -> R.string.error_invalid_month
+                    DateValidationResult.YearTooFar -> R.string.error_year_too_far
+                    DateValidationResult.Expired -> R.string.error_expired_date
+                    DateValidationResult.InvalidFormat -> R.string.error_invalid_date
+                    else -> null
+                }
+                expirationScanStarted = false
+                if (validDate == DateValidationResult.Valid) {
+                    _productState.update {
+                        it.copy(
+                            product = it.product?.copy(expirationDate = detectedDate),
+                            showManualExpirationDateInput = false,
+                        )
+                    }
+                } else {
+                    _productState.update {
+                        it.copy(
+                            showManualExpirationDateInput = true,
+                            errorDateFormatMessage = errorMessage
+                        )
+                    }
+                }
+            } else {
+                _productState.update {
+                    it.copy(
+                        showManualExpirationDateInput = true,
+                    )
+                }
             }
         }
     }
 
+    fun retryExpirationScan() {
+        expirationScanStarted = false
+        _productState.update {
+            it.copy(showManualExpirationDateInput = false, errorDateFormatMessage = null)
+        }
+    }
+
+
     fun updateQuantity(newQuantityText: String, saveProduct: Boolean = false) {
-        val newQuantity = newQuantityText.toIntOrNull()
+        val newQuantity = newQuantityText.trim().toIntOrNull()
 
         if (newQuantity == null || newQuantity == 0) {
             _productState.update { it.copy(isQuantityError = true) }
@@ -113,4 +164,14 @@ class AddProductViewModel @Inject constructor(
             }
         }
     }
+
+    private fun startExpirationScanTimeout() {
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(5_000L)
+            if (_productState.value.product?.expirationDate == null) {
+                _productState.update { it.copy(showManualExpirationDateInput = true) }
+            }
+        }
+    }
+
 }

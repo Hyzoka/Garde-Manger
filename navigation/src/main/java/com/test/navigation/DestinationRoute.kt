@@ -1,4 +1,4 @@
-package com.garde.core
+package com.test.navigation
 
 object DestinationRoute {
     const val PRODUCT_SCREEN = "product_screen_route"

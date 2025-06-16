@@ -15,4 +15,22 @@
     <string name="barcode_detection_title">Détection du code-bare</string>
     <string name="text_recognition_title">détection de la date de péremption</string>
     <string name="search">Recherche du product</string>
+    <string name="quantity">Quantité :</string>
+
+
+    <string name="please_enter_valid_quantity">Veuillez entrer une quantité valide</string>
+    <string name="please_enter_valid_date">Veuillez entrer une date valide</string>
+    <string name="error_invalid_expiration_date">La date de péremption n\'est pas valide ou déjà passée.</string>
+    <string name="error_invalid_day">Le jour est invalide</string>
+    <string name="error_invalid_month">Le mois est invalide</string>
+    <string name="error_year_too_far">L\'année est trop éloignée</string>
+    <string name="error_expired_date">La date est déjà passée</string>
+    <string name="error_invalid_date">La date est invalide</string>
+
+
+    <string name="manual_expiration_entry_title">Entrer la date de péremption</string>
+    <string name="enter_expiration_date">Date de péremption</string>
+    <string name="confirm">Confirmer</string>
+    <string name="retry_scan">Relancer le scan</string>
+
 </resources>

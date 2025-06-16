@@ -1,4 +1,4 @@
-package com.garde.domain
+package com.garde.domain.utils
 
 sealed class ResultState<out T> {
     object Loading : ResultState<Nothing>()

@@ -1,6 +1,6 @@
 package com.garde.domain.usecase
 
-import com.garde.domain.ResultState
+import com.garde.domain.utils.ResultState
 import com.garde.domain.model.Product
 import com.garde.domain.repo.ProductRepository
 import kotlinx.coroutines.flow.Flow

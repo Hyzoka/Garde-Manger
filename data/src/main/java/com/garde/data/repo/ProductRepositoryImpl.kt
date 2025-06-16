@@ -4,12 +4,11 @@ import com.garde.data.local.ProductDao
 import com.garde.data.model.toDomain
 import com.garde.data.model.toEntity
 import com.garde.data.remote.OpenFoodFactsService
-import com.garde.domain.ResultState
+import com.garde.domain.utils.ResultState
 import com.garde.domain.model.Product
 import com.garde.domain.repo.ProductRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn

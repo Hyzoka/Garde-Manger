@@ -15,4 +15,21 @@
     <string name="barcode_detection_title">Bare code detection</string>
     <string name="text_recognition_title">date of expiration detection</string>
     <string name="search">search product</string>
+    <string name="quantity">Quantity</string>
+
+    <string name="please_enter_valid_quantity">Please enter a valid quantity</string>
+    <string name="please_enter_valid_date">Please enter a valid date</string>
+    <string name="error_invalid_expiration_date">The expiration date is invalid or already passed.</string>
+    <string name="error_invalid_day">The day is invalid</string>
+    <string name="error_invalid_month">The month is invalid</string>
+    <string name="error_year_too_far">The year is too far in the future</string>
+    <string name="error_expired_date">The date has already passed</string>
+    <string name="error_invalid_date">The date is invalid</string>
+
+    <string name="manual_expiration_entry_title">Enter the expiration date</string>
+    <string name="enter_expiration_date">Expiration date</string>
+    <string name="confirm">Confirm</string>
+    <string name="retry_scan">Retry scan</string>
+
+
 </resources>

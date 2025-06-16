@@ -5,6 +5,8 @@ import com.garde.domain.model.Product
 data class AddProductViewState(
     val product: Product? = null,
     val isQuantityError: Boolean = false,
+    val errorDateFormatMessage : Int? = null,
+    val showManualExpirationDateInput: Boolean = false
 )
 
 sealed interface AddProductStepViewState {

@@ -2,7 +2,7 @@ package com.test.product.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.garde.domain.ResultState
+import com.garde.domain.utils.ResultState
 import com.garde.domain.model.Product
 import com.garde.domain.usecase.GetProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

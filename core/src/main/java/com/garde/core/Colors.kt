@@ -7,7 +7,7 @@ package com.garde.core
 //val PrimaryDark = Color(0xFF40241A)
 //
 //// Secondary color palette
-//val Secondary = Color(0xFF8BC34A) // Vert frais
+//val Secondary = Color(0xFF8BC34A)
 //val SecondaryLight = Color(0xFFBEF67A)
 //val SecondaryDark = Color(0xFF5A9216)
 //

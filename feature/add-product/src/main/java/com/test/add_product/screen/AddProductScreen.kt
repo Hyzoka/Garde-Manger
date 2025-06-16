@@ -28,6 +28,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +55,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.garde.component.MessageView
 import com.garde.component.TopBarComponent
+import com.garde.component.textfield.ExpirationDateTextField
 import com.garde.core.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
@@ -148,13 +150,13 @@ fun AddProductScreen(
                                 imageWidth.intValue = width
                                 imageHeight.intValue = height
 
-                                if (barcodes.isNotEmpty()) {
+                                if (barcodes.isNotEmpty() && step == AddProductStepViewState.ScanProduct) {
                                     val barcodeValue = barcodes.first().displayValue ?: ""
                                     viewModel.fetchProduct(barcodeValue)
                                 }
                             },
                             textAnalyzer = TextRecognitionAnalyzer { text ->
-                                if (text != extractedText.value && text.isNotBlank()) {
+                                if (text != extractedText.value && text.isNotBlank() && step == AddProductStepViewState.ScanExpirationDate) {
                                     viewModel.handleExpirationDate(text)
                                 }
                             },
@@ -162,18 +164,15 @@ fun AddProductScreen(
                         )
                     )
 
-                    if (step == AddProductStepViewState.ScanProduct)
-                        DrawBarcode(
-                            barcodes = detectedBarcode,
-                            imageWidth = imageWidth.intValue,
-                            imageHeight = imageHeight.intValue,
-                            screenWidth = screenWidth.intValue,
-                            screenHeight = screenHeight.intValue
-                        )
-
                     when (step) {
                         AddProductStepViewState.ScanProduct -> {
-                            // Nothing to display
+                            DrawBarcode(
+                                barcodes = detectedBarcode,
+                                imageWidth = imageWidth.intValue,
+                                imageHeight = imageHeight.intValue,
+                                screenWidth = screenWidth.intValue,
+                                screenHeight = screenHeight.intValue
+                            )
                         }
 
                         AddProductStepViewState.SelectQuantity -> DisplayModalProductBottomSheet(
@@ -184,7 +183,13 @@ fun AddProductScreen(
 
 
                         AddProductStepViewState.ScanExpirationDate -> {
-                            // Nothing to display
+                            if (productState.showManualExpirationDateInput) {
+                                ExpirationDateInputBottomSheet(
+                                    onErrorDateState = productState.errorDateFormatMessage,
+                                    onConfirm = { date -> viewModel.handleExpirationDate(date) },
+                                    onRetry = { viewModel.retryExpirationScan() }
+                                )
+                            }
                         }
 
                         AddProductStepViewState.ConfirmProduct -> DisplayModalProductBottomSheet(
@@ -287,7 +292,10 @@ fun ProductBottomSheetContent(
             AddProductStepViewState.SelectQuantity -> {
                 var quantity by rememberSaveable { mutableStateOf("1") }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.quantity),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
@@ -301,7 +309,10 @@ fun ProductBottomSheetContent(
                         isError = productState.isQuantityError,
                         supportingText = {
                             if (productState.isQuantityError) {
-                                Text("Veuillez entrer une quantité valide", color = Color.Red)
+                                Text(
+                                    stringResource(R.string.please_enter_valid_quantity),
+                                    color = Color.Red
+                                )
                             }
                         },
                         modifier = Modifier
@@ -333,7 +344,10 @@ fun ProductBottomSheetContent(
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Quantité :", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.quantity),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
@@ -368,4 +382,46 @@ fun ProductBottomSheetContent(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExpirationDateInputBottomSheet(
+    onErrorDateState: Int?,
+    onConfirm: (String) -> Unit,
+    onRetry: () -> Unit
+) {
+    var dateInput by rememberSaveable { mutableStateOf("") }
+
+    ModalBottomSheet(onDismissRequest = { }) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp)
+                .navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.manual_expiration_entry_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            ExpirationDateTextField(dateInput, { dateInput = it }, onErrorDateState)
+
+            Button(
+                onClick = { onConfirm(dateInput) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+
+            TextButton(
+                onClick = onRetry,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(stringResource(R.string.retry_scan))
+            }
+        }
+    }
+}
+
 

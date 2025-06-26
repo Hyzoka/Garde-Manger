@@ -12,26 +12,32 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertProduct(product: ProductEntity): Long
 
-    @Query(
-        """
-        UPDATE products 
-        SET quantity = quantity + :amount 
-        WHERE barcode = :barcode AND expirationDate = :expirationDate
-    """
-    )
-    suspend fun incrementQuantity(barcode: String, expirationDate: String, amount: Int)
+    @Query("""
+    SELECT * FROM products 
+    WHERE barcode = :barcode AND expirationDate = :expirationDate
+    LIMIT 1
+""")
+    suspend fun findProductByBarcodeAndDate(barcode: String, expirationDate: String): ProductEntity?
 
-    @Query("SELECT * FROM products WHERE barcode = :barcode")
-    suspend fun getProductByBarcode(barcode: String): ProductEntity?
+    @Query("""
+    UPDATE products 
+    SET quantity = quantity + :amount 
+    WHERE id = :id
+""")
+    suspend fun incrementQuantity(id: String, amount: Int)
+
+
+    @Query("SELECT * FROM products WHERE id = :id")
+    suspend fun getProductById(id: String): ProductEntity?
 
     @Query("SELECT * FROM products")
     fun getAllProducts(): Flow<List<ProductEntity>>
 
-    @Query("UPDATE products SET quantity = :quantity WHERE barcode = :productId AND expirationDate = :expirationDate")
-    suspend fun updateQuantity(productId: String, expirationDate: String, quantity: Int)
+    @Query("UPDATE products SET quantity = :quantity WHERE id = :productId")
+    suspend fun updateQuantity(productId: String, quantity: Int)
 
-    @Query("DELETE FROM products WHERE barcode = :productId AND expirationDate = :expirationDate")
-    suspend fun deleteProduct(productId: String, expirationDate: String)
+    @Query("DELETE FROM products WHERE id = :productId")
+    suspend fun deleteProduct(productId: String)
 
 
 }

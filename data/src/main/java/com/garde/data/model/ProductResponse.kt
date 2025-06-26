@@ -16,6 +16,7 @@ data class ProductDto(
 
 fun ProductDto.toDomain(): Product {
     return Product(
+        barcode = id,
         id = id,
         name = name,
         brand = brand,

@@ -1,24 +1,26 @@
 package com.garde.data.model
 
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.garde.domain.model.Product
+import java.util.UUID
 
-@Entity(
-    tableName = "products",
-    primaryKeys = ["barcode", "expirationDate"]
-)
+@Entity(tableName = "products")
 data class ProductEntity(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val barcode: String,
     val name: String,
     val brand: String?,
     val imageUrl: String?,
-    val expirationDate: String,
+    val expirationDate: String?,
     val quantity: Int
 )
 
+
 fun ProductEntity.toDomain(): Product {
     return Product(
-        id = barcode,
+        id = id,
+        barcode = barcode,
         name = name,
         brand = brand,
         imageUrl = imageUrl,
@@ -29,7 +31,7 @@ fun ProductEntity.toDomain(): Product {
 
 fun Product.toEntity(): ProductEntity {
     return ProductEntity(
-        barcode = id,
+        barcode = barcode,
         name = name,
         brand = brand,
         imageUrl = imageUrl,

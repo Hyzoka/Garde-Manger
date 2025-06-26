@@ -1,7 +1,7 @@
 package com.garde.domain.repo
 
-import com.garde.domain.utils.ResultState
 import com.garde.domain.model.Product
+import com.garde.domain.utils.ResultState
 import kotlinx.coroutines.flow.Flow
 
 interface ProductRepository {
@@ -9,8 +9,8 @@ interface ProductRepository {
     fun getProductDetailsById(id: Int): Flow<ResultState<Product>> // refacto
     fun getAllProducts(): Flow<ResultState<List<Product>>> // refacto
     suspend fun saveProduct(product: Product): Result<Unit>
-    suspend fun updateProductQuantity(productId: String, expirationDate: String, newQuantity: Int): Result<Unit>
-    suspend fun deleteProduct(productId: String, expirationDate: String): Result<Unit>
+    suspend fun updateProductQuantity(productId: String, newQuantity: Int): Result<Unit>
+    suspend fun deleteProduct(productId: String): Result<Unit>
 
 
 }

@@ -87,7 +87,6 @@ class ProductListViewModel @Inject constructor(
         viewModelScope.launch {
             repository.updateProductQuantity(
                 productId = product.id,
-                expirationDate = product.expirationDate ?: return@launch,
                 newQuantity = newQuantity
             ).onFailure {
                 // handle failure
@@ -99,7 +98,6 @@ class ProductListViewModel @Inject constructor(
         viewModelScope.launch {
             repository.deleteProduct(
                 productId = product.id,
-                expirationDate = product.expirationDate ?: return@launch
             ).onFailure {
                 // handle failure
             }

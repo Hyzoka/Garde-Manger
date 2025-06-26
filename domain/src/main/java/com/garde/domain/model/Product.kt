@@ -1,7 +1,8 @@
 package com.garde.domain.model
 
 data class Product(
-    val id: String, // bare-core from api
+    val id: String,
+    val barcode: String,
     val name: String,
     val brand: String?,
     val imageUrl: String?,

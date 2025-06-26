@@ -45,29 +45,31 @@ class ProductRepositoryImpl @Inject constructor(
 
     override suspend fun saveProduct(product: Product): Result<Unit> = runCatching {
         withContext(Dispatchers.IO) {
-            val entity = product.toEntity()
-            val result = productDao.insertProduct(entity)
-            if (result == -1L) {
-                productDao.incrementQuantity(
-                    barcode = entity.barcode,
-                    expirationDate = entity.expirationDate,
-                    amount = entity.quantity
-                )
+            val existing = productDao.findProductByBarcodeAndDate(
+                product.barcode,
+                product.expirationDate ?: return@withContext
+            )
+
+            if (existing != null) {
+                productDao.incrementQuantity(existing.id, product.quantity ?: 1)
+            } else {
+                productDao.insertProduct(product.toEntity())
             }
         }
     }
 
-    override suspend fun updateProductQuantity(productId: String, expirationDate: String, newQuantity: Int): Result<Unit> =
+
+    override suspend fun updateProductQuantity(productId: String, newQuantity: Int): Result<Unit> =
         runCatching {
             withContext(Dispatchers.IO) {
-                productDao.updateQuantity(productId, expirationDate, newQuantity)
+                productDao.updateQuantity(productId, newQuantity)
             }
         }
 
-    override suspend fun deleteProduct(productId: String, expirationDate: String): Result<Unit> =
+    override suspend fun deleteProduct(productId: String): Result<Unit> =
         runCatching {
             withContext(Dispatchers.IO) {
-                productDao.deleteProduct(productId, expirationDate)
+                productDao.deleteProduct(productId)
             }
         }
 }

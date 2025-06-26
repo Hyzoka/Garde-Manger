@@ -4,13 +4,19 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,8 +39,11 @@ import com.garde.domain.utils.getRemainingDays
 @Composable
 fun ProductItem(
     product: Product,
-    modifier: Modifier = Modifier,
-    onClick: (String) -> Unit
+    isEditMode: Boolean,
+    onClick: (String) -> Unit,
+    onQuantityUpdate: (Product, Int) -> Unit,
+    onDeleteProduct: (Product) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
@@ -84,17 +93,52 @@ fun ProductItem(
                 overflow = TextOverflow.Ellipsis
             )
 
-            Text(
-                text = pluralStringResource(
-                    R.plurals.product_quantity,
-                    product.quantity ?: 0,
-                    product.quantity ?: 0
-                ),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                textAlign = TextAlign.Center
-            )
+            if (isEditMode) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    IconButton(onClick = {
+                        val newQty = (product.quantity ?: 1) - 1
+                        if (newQty <= 0) onDeleteProduct(product)
+                        else onQuantityUpdate(product, newQty)
+                    }) {
+                        Icon(
+                            Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Decrease quantity"
+                        )
+                    }
+
+                    Text(
+                        text = "${product.quantity}",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+
+                    IconButton(onClick = {
+                        val newQty = (product.quantity ?: 0) + 1
+                        onQuantityUpdate(product, newQty)
+                    }) {
+                        Icon(
+                            Icons.Default.KeyboardArrowUp,
+                            contentDescription = "Increase quantity"
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.product_quantity,
+                        product.quantity ?: 0,
+                        product.quantity ?: 0
+                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center
+                )
+            }
+
         }
     }
 }

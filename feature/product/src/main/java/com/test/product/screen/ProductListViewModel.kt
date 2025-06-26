@@ -2,9 +2,10 @@ package com.test.product.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.garde.domain.utils.ResultState
 import com.garde.domain.model.Product
+import com.garde.domain.repo.ProductRepository
 import com.garde.domain.usecase.GetProductsUseCase
+import com.garde.domain.utils.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,11 +17,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProductListViewModel @Inject constructor(
-    private val getProductsUseCase: GetProductsUseCase
+    private val getProductsUseCase: GetProductsUseCase,
+    private val repository: ProductRepository,
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(ProductListViewState())
@@ -73,12 +76,35 @@ class ProductListViewModel @Inject constructor(
             it.copy(searchText = text)
         }
     }
+
+    fun isEditing(isEditing: Boolean) {
+        _viewState.update {
+            it.copy(editStockedProduct = it.editStockedProduct.copy(isEditing = isEditing))
+        }
+    }
+
+    fun updateQuantity(product: Product, newQuantity: Int) {
+        viewModelScope.launch {
+            repository.updateProductQuantity(
+                productId = product.id,
+                expirationDate = product.expirationDate ?: return@launch,
+                newQuantity = newQuantity
+            ).onFailure {
+                // handle failure
+            }
+        }
+    }
+
+    fun deleteProduct(product: Product) {
+        viewModelScope.launch {
+            repository.deleteProduct(
+                productId = product.id,
+                expirationDate = product.expirationDate ?: return@launch
+            ).onFailure {
+                // handle failure
+            }
+        }
+    }
+
+
 }
-
-data class ProductListViewState(
-    val isLoading: Boolean = true,
-    val products: List<Product> = emptyList(),
-    val error: String? = null,
-    val searchText: String = ""
-)
-

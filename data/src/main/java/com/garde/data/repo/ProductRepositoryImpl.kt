@@ -56,4 +56,18 @@ class ProductRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override suspend fun updateProductQuantity(productId: String, expirationDate: String, newQuantity: Int): Result<Unit> =
+        runCatching {
+            withContext(Dispatchers.IO) {
+                productDao.updateQuantity(productId, expirationDate, newQuantity)
+            }
+        }
+
+    override suspend fun deleteProduct(productId: String, expirationDate: String): Result<Unit> =
+        runCatching {
+            withContext(Dispatchers.IO) {
+                productDao.deleteProduct(productId, expirationDate)
+            }
+        }
 }

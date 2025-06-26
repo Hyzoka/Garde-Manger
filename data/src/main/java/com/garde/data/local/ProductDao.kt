@@ -26,6 +26,14 @@ interface ProductDao {
 
     @Query("SELECT * FROM products")
     fun getAllProducts(): Flow<List<ProductEntity>>
+
+    @Query("UPDATE products SET quantity = :quantity WHERE barcode = :productId AND expirationDate = :expirationDate")
+    suspend fun updateQuantity(productId: String, expirationDate: String, quantity: Int)
+
+    @Query("DELETE FROM products WHERE barcode = :productId AND expirationDate = :expirationDate")
+    suspend fun deleteProduct(productId: String, expirationDate: String)
+
+
 }
 
 

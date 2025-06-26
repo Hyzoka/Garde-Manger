@@ -18,7 +18,10 @@ import com.garde.domain.model.Product
 @Composable
 fun ProductGrid(
     products: List<Product>,
-    onProductClick: (String) -> Unit
+    isEditing: Boolean,
+    onProductClick: (String) -> Unit,
+    onQuantityUpdate: (Product, Int) -> Unit,
+    onDeleteProduct: (Product) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -32,7 +35,13 @@ fun ProductGrid(
                 visible = true,
                 enter = fadeIn(animationSpec = tween(500)) + slideInVertically()
             ) {
-                ProductItem(product = product, onClick = onProductClick)
+                ProductItem(
+                    product = product,
+                    isEditMode = isEditing,
+                    onClick = onProductClick,
+                    onQuantityUpdate = onQuantityUpdate,
+                    onDeleteProduct = onDeleteProduct
+                )
             }
         }
     }

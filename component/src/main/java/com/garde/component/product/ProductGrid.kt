@@ -18,7 +18,7 @@ import com.garde.domain.model.Product
 @Composable
 fun ProductGrid(
     products: List<Product>,
-    onProductClick: (String) -> Unit // ✅ Callback pour ouvrir les détails
+    onProductClick: (String) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),

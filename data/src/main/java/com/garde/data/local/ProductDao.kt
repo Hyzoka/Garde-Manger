@@ -10,15 +10,21 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertProduct(product: ProductEntity): Long // ⚠️ Retourne `-1` si le produit existe déjà
+    suspend fun insertProduct(product: ProductEntity): Long
 
-    @Query("UPDATE product SET quantity = quantity + :amount WHERE barcode = :barcode")
-    suspend fun incrementQuantity(barcode: String, amount: Int)
+    @Query(
+        """
+        UPDATE products 
+        SET quantity = quantity + :amount 
+        WHERE barcode = :barcode AND expirationDate = :expirationDate
+    """
+    )
+    suspend fun incrementQuantity(barcode: String, expirationDate: String, amount: Int)
 
-    @Query("SELECT * FROM product WHERE barcode = :barcode")
+    @Query("SELECT * FROM products WHERE barcode = :barcode")
     suspend fun getProductByBarcode(barcode: String): ProductEntity?
 
-    @Query("SELECT * FROM product")
+    @Query("SELECT * FROM products")
     fun getAllProducts(): Flow<List<ProductEntity>>
 }
 

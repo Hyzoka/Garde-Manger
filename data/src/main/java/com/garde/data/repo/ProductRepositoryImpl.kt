@@ -4,9 +4,9 @@ import com.garde.data.local.ProductDao
 import com.garde.data.model.toDomain
 import com.garde.data.model.toEntity
 import com.garde.data.remote.OpenFoodFactsService
-import com.garde.domain.utils.ResultState
 import com.garde.domain.model.Product
 import com.garde.domain.repo.ProductRepository
+import com.garde.domain.utils.ResultState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -19,12 +19,13 @@ import javax.inject.Inject
 class ProductRepositoryImpl @Inject constructor(
     private val apiService: OpenFoodFactsService,
     private val productDao: ProductDao
-) : ProductRepository  {
+) : ProductRepository {
 
     //fetch product from api with bare-code
     override suspend fun getProductByBarcode(barcode: String): Result<Product> = runCatching {
         withContext(Dispatchers.IO) {
-            apiService.getProduct(barcode).product?.toDomain() ?: error("Product cannot be retrieved with barcode : $barcode")
+            apiService.getProduct(barcode).product?.toDomain()
+                ?: error("Product cannot be retrieved with barcode : $barcode")
         }
     }
 
@@ -44,9 +45,14 @@ class ProductRepositoryImpl @Inject constructor(
 
     override suspend fun saveProduct(product: Product): Result<Unit> = runCatching {
         withContext(Dispatchers.IO) {
-            val result = productDao.insertProduct(product.toEntity())
+            val entity = product.toEntity()
+            val result = productDao.insertProduct(entity)
             if (result == -1L) {
-                productDao.incrementQuantity(product.id, product.quantity ?: error("No quantity specified for the product"))
+                productDao.incrementQuantity(
+                    barcode = entity.barcode,
+                    expirationDate = entity.expirationDate,
+                    amount = entity.quantity
+                )
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.garde.domain.utils
 
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 
@@ -21,3 +22,17 @@ object DateFormatConstants {
         SimpleDateFormat(FORMAT_MM_DD_YY, Locale.getDefault())
     )
 }
+
+
+fun getRemainingDays(
+    expirationDate: String?,
+    currentDate: Date = Date(),
+    format: String = FORMAT_DD_MM_YYYY
+): Int {
+    val sdf = SimpleDateFormat(format, Locale.getDefault())
+    val daysLeft = sdf.parse(expirationDate ?: "") ?: Date()
+
+    val diffInMillis = daysLeft.time - currentDate.time
+    return (diffInMillis / (1000 * 60 * 60 * 24)).toInt()
+}
+

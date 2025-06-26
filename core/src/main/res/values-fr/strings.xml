@@ -18,6 +18,13 @@
     <string name="quantity">Quantité :</string>
     <string name="edit">Edit</string>
 
+
+    <string name="expired_since_days">Expiré depuis %1$d jours</string>
+    <string name="expire_today">Expire aujourd\'hui</string>
+    <string name="expire_in_days">Expire dans %1$d jours</string>
+    <string name="expire_in_years">Expire dans %1$d ans</string>
+    <string name="expire_in_years_and_days">Expire dans %1$d ans et %2$d jours</string>
+
     <string name="please_enter_valid_quantity">Veuillez entrer une quantité valide</string>
     <string name="please_enter_valid_date">Veuillez entrer une date valide</string>
     <string name="error_invalid_expiration_date">La date de péremption n\'est pas valide ou déjà passée.</string>
@@ -33,4 +40,8 @@
     <string name="confirm">Confirmer</string>
     <string name="retry_scan">Relancer le scan</string>
 
+    <plurals name="product_quantity">
+        <item quantity="one">%d article</item>
+        <item quantity="other">%d articles</item>
+    </plurals>
 </resources>

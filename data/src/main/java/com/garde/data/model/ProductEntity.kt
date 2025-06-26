@@ -1,16 +1,18 @@
 package com.garde.data.model
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.garde.domain.model.Product
 
-@Entity(tableName = "product")
+@Entity(
+    tableName = "products",
+    primaryKeys = ["barcode", "expirationDate"]
+)
 data class ProductEntity(
-    @PrimaryKey val barcode: String,
+    val barcode: String,
     val name: String,
     val brand: String?,
     val imageUrl: String?,
-    val expirationDate: String?,
+    val expirationDate: String,
     val quantity: Int
 )
 
@@ -31,7 +33,7 @@ fun Product.toEntity(): ProductEntity {
         name = name,
         brand = brand,
         imageUrl = imageUrl,
-        expirationDate = expirationDate,
+        expirationDate = expirationDate ?: error("No expiration date specified in the product"),
         quantity = quantity ?: error("No quantity specified in the product")
     )
 }

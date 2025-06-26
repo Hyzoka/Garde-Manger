@@ -17,13 +17,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.garde.component.utils.getLocalizedExpirationMessage
+import com.garde.core.R
 import com.garde.domain.model.Product
+import com.garde.domain.utils.getRemainingDays
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -54,7 +58,7 @@ fun ProductItem(
                 contentDescription = "Image du produit",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp) // ✅ Taille de l'image fixe
+                    .height(150.dp)
                     .clip(shape = RoundedCornerShape(10.dp)),
             )
 
@@ -68,7 +72,11 @@ fun ProductItem(
             )
 
             Text(
-                text = "Marque: ${product.brand ?: "Non renseigné"}",
+                text = getLocalizedExpirationMessage(
+                    getRemainingDays(
+                        expirationDate = product.expirationDate ?: "Non renseigné"
+                    )
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
@@ -77,7 +85,11 @@ fun ProductItem(
             )
 
             Text(
-                text = "Quantité: ${product.quantity}",
+                text = pluralStringResource(
+                    R.plurals.product_quantity,
+                    product.quantity ?: 0,
+                    product.quantity ?: 0
+                ),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,

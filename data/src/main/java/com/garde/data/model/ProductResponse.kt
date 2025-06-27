@@ -1,6 +1,7 @@
 package com.garde.data.model
 
 import com.garde.domain.model.Product
+import com.garde.domain.model.ProductLot
 import com.google.gson.annotations.SerializedName
 
 data class ProductResponse(
@@ -25,3 +26,11 @@ fun ProductDto.toDomain(): Product {
         quantity = 1
     )
 }
+
+fun ProductEntity.toLot(): ProductLot {
+    return ProductLot(
+        expirationDate = expirationDate,
+        quantity = quantity
+    )
+}
+

@@ -44,4 +44,11 @@
         <item quantity="one">%d article</item>
         <item quantity="other">%d articles</item>
     </plurals>
+
+    <string name="product_details_title">Détails du produit</string>
+    <string name="barcode_label">Code-barres : %1$s</string>
+    <string name="lots_title">Lots disponibles</string>
+    <string name="no_lots_found">Aucun lot trouvé pour ce produit.</string>
+    <string name="error_loading_product">Échec du chargement des détails du produit.</string>
+
 </resources>

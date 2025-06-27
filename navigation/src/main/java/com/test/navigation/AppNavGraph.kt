@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.test.add_product.screen.AddProductScreen
 import com.test.product.screen.ProductListScreen
+import com.test.product_details.ProductDetailsScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController, startDestination: String, modifier: Modifier) {
@@ -34,6 +35,12 @@ fun AppNavGraph(navController: NavHostController, startDestination: String, modi
             )
         }) {
             AddProductScreen(onPopBackStack = {
+                navController.popBackStack()
+            })
+        }
+
+        composable(DestinationRoute.PRODUCT_DETAIL_SCREEN) {
+            ProductDetailsScreen({
                 navController.popBackStack()
             })
         }

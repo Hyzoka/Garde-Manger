@@ -18,10 +18,10 @@
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/add-product" />
             <option value="$PROJECT_DIR$/feature/product" />
+            <option value="$PROJECT_DIR$/feature/product-details" />
             <option value="$PROJECT_DIR$/navigation" />
           </set>
         </option>
-        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

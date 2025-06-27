@@ -3,13 +3,16 @@ package com.garde.data.repo
 import com.garde.data.local.ProductDao
 import com.garde.data.model.toDomain
 import com.garde.data.model.toEntity
+import com.garde.data.model.toLot
 import com.garde.data.remote.OpenFoodFactsService
 import com.garde.domain.model.Product
+import com.garde.domain.model.ProductDetails
 import com.garde.domain.repo.ProductRepository
 import com.garde.domain.utils.ResultState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -29,9 +32,23 @@ class ProductRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getProductDetailsById(id: Int): Flow<ResultState<Product>> {
-        TODO("Not yet implemented")
+    override suspend fun getProductDetails(barcode: String): Result<ProductDetails> = runCatching {
+        withContext(Dispatchers.IO) {
+            // 1️⃣ API
+            val productResponse = apiService.getProduct(barcode)
+            val product =
+                productResponse.product?.toDomain() ?: throw Exception("Invalid API response")
+
+            // 2️⃣ DB
+            val localLots = productDao.getLotsForBarcode(barcode)
+                .first()     // 👈 transforme Flow en List
+                .map { it.toLot() }
+
+            // 3️⃣ Combine
+            ProductDetails(product, localLots)
+        }
     }
+
 
     override fun getAllProducts(): Flow<ResultState<List<Product>>> = flow {
         emit(ResultState.Loading)

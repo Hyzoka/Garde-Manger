@@ -33,6 +33,9 @@ interface ProductDao {
     @Query("SELECT * FROM products")
     fun getAllProducts(): Flow<List<ProductEntity>>
 
+    @Query("SELECT * FROM products WHERE barcode = :barcode")
+    fun getLotsForBarcode(barcode: String): Flow<List<ProductEntity>>
+
     @Query("UPDATE products SET quantity = :quantity WHERE id = :productId")
     suspend fun updateQuantity(productId: String, quantity: Int)
 

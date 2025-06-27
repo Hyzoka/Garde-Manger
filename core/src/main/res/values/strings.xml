@@ -44,4 +44,10 @@
         <item quantity="other">%d items</item>
     </plurals>
 
+    <string name="product_details_title">Product Details</string>
+    <string name="barcode_label">Barcode: %1$s</string>
+    <string name="lots_title">Available Lots</string>
+    <string name="no_lots_found">No lots found for this product.</string>
+    <string name="error_loading_product">Failed to load product details.</string>
+
 </resources>

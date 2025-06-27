@@ -8,4 +8,12 @@ data class Product(
     val imageUrl: String?,
     val expirationDate: String?,
     val quantity: Int?,
+    // Santé
+    val nutriscore: String? = null,    // A, B, C, D, E
+    val novaGroup: Int? = null,        // 1-4
+    val ingredients: String? = null,
+    val additives: String? = null,
+    // Environnement
+    val ecoscore: String? = null,      // A, B, C, D, E
+    val labels: String? = null,
 )

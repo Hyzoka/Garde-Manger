@@ -53,7 +53,7 @@ fun ProductItem(
         modifier = modifier
             .height(275.dp)
             .padding(4.dp)
-            .clickable { onClick(product.id) }
+            .clickable { onClick(product.barcode) }
     ) {
         Column(
             modifier = Modifier

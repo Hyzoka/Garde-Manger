@@ -28,6 +28,7 @@ import com.garde.component.product.ProductGrid
 @Composable
 fun ProductListScreen(
     onAddProductClick: () -> Unit,
+    onProductClick: (String) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
     val viewState by viewModel.viewState.collectAsState()
@@ -90,7 +91,7 @@ fun ProductListScreen(
                 else -> ProductGrid(
                     products = viewState.products,
                     isEditing = viewState.editStockedProduct.isEditing,
-                    onProductClick = { barecode -> },
+                    onProductClick = { onProductClick(it) },
                     onQuantityUpdate = { prod, newQty -> viewModel.updateQuantity(prod, newQty) },
                     onDeleteProduct = { viewModel.deleteProduct(it) })
             }

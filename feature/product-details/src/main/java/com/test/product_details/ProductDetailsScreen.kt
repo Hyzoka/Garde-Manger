@@ -45,6 +45,7 @@ import com.garde.domain.model.ProductLot
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailsScreen(
+    barcode: String,
     onBackClick: () -> Unit,
     viewModel: ProductDetailsViewModel = hiltViewModel()
 ) {

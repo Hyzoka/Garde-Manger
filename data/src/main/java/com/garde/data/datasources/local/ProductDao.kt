@@ -1,4 +1,4 @@
-package com.garde.data.local
+package com.garde.data.datasources.local
 
 import androidx.room.Dao
 import androidx.room.Insert

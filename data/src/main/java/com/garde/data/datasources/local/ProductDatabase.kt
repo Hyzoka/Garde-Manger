@@ -1,4 +1,4 @@
-package com.garde.data.local
+package com.garde.data.datasources.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

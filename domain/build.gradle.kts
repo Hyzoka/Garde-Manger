@@ -36,6 +36,8 @@ android {
 
 dependencies {
 
+    implementation(project(":data"))
+
     //default
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

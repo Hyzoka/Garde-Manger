@@ -35,7 +35,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain"))
     implementation(project(":core"))
 
     //default
@@ -56,9 +55,12 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
 
-    //retrofit
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
+
+    //Ktor
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.json)
 
 
     //coroutine

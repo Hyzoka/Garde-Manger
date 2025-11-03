@@ -1,5 +1,8 @@
 package com.garde.domain.model
 
+import com.garde.data.model.ProductDto
+import com.garde.data.model.ProductEntity
+
 data class Product(
     val id: String,
     val barcode: String,
@@ -17,3 +20,38 @@ data class Product(
     val ecoscore: String? = null,      // A, B, C, D, E
     val labels: String? = null,
 )
+
+fun ProductDto.toDomain(): Product {
+    return Product(
+        barcode = id,
+        id = id,
+        name = name,
+        brand = brand,
+        imageUrl = imageUrl,
+        expirationDate = null, // L’API ne fournit pas cette info, on la stocke dans Room
+        quantity = 1
+    )
+}
+
+fun ProductEntity.toDomain(): Product {
+    return Product(
+        id = id,
+        barcode = barcode,
+        name = name,
+        brand = brand,
+        imageUrl = imageUrl,
+        expirationDate = expirationDate,
+        quantity = quantity
+    )
+}
+
+fun Product.toEntity(): ProductEntity {
+    return ProductEntity(
+        barcode = barcode,
+        name = name,
+        brand = brand,
+        imageUrl = imageUrl,
+        expirationDate = expirationDate ?: error("No expiration date specified in the product"),
+        quantity = quantity ?: error("No quantity specified in the product")
+    )
+}

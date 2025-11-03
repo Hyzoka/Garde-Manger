@@ -1,18 +1,14 @@
-package com.garde.data.repo
+package com.garde.domain.repo
 
-import com.garde.data.local.ProductDao
-import com.garde.data.model.toDomain
-import com.garde.data.model.toEntity
-import com.garde.data.model.toLot
-import com.garde.data.remote.OpenFoodFactsService
+import com.garde.data.datasources.local.ProductDao
+import com.garde.data.datasources.remote.ProductDataSource
 import com.garde.domain.model.Product
-import com.garde.domain.model.ProductDetails
-import com.garde.domain.repo.ProductRepository
+import com.garde.domain.model.toDomain
+import com.garde.domain.model.toEntity
 import com.garde.domain.utils.ResultState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -20,34 +16,34 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ProductRepositoryImpl @Inject constructor(
-    private val apiService: OpenFoodFactsService,
+    private val remoteDataSource: ProductDataSource,
     private val productDao: ProductDao
 ) : ProductRepository {
 
     //fetch product from api with bare-code
     override suspend fun getProductByBarcode(barcode: String): Result<Product> = runCatching {
-        withContext(Dispatchers.IO) {
-            apiService.getProduct(barcode).product?.toDomain()
+        return remoteDataSource.getProductByBarcode(barcode).map { productResponse ->
+            productResponse.product?.toDomain()
                 ?: error("Product cannot be retrieved with barcode : $barcode")
         }
     }
 
-    override suspend fun getProductDetails(barcode: String): Result<ProductDetails> = runCatching {
-        withContext(Dispatchers.IO) {
-            // 1️⃣ API
-            val productResponse = apiService.getProduct(barcode)
-            val product =
-                productResponse.product?.toDomain() ?: throw Exception("Invalid API response")
-
-            // 2️⃣ DB
-            val localLots = productDao.getLotsForBarcode(barcode)
-                .first()     // 👈 transforme Flow en List
-                .map { it.toLot() }
-
-            // 3️⃣ Combine
-            ProductDetails(product, localLots)
-        }
-    }
+    // override suspend fun getProductDetails(barcode: String): Result<ProductDetails> = runCatching {
+    //     withContext(Dispatchers.IO) {
+    //         // 1️⃣ API
+    //         val productResponse = remoteDataSource.getProduct(barcode)
+    //         val product =
+    //             productResponse.product?.toDomain() ?: throw Exception("Invalid API response")
+//
+    //         // 2️⃣ DB
+    //         val localLots = productDao.getLotsForBarcode(barcode)
+    //             .first()     // 👈 transforme Flow en List
+    //             .map { it.toLot() }
+//
+    //         // 3️⃣ Combine
+    //         ProductDetails(product, localLots)
+    //     }
+    // }
 
 
     override fun getAllProducts(): Flow<ResultState<List<Product>>> = flow {

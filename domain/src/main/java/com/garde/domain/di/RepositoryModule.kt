@@ -1,7 +1,7 @@
-package com.garde.data.di
+package com.garde.domain.di
 
-import com.garde.data.repo.ProductRepositoryImpl
 import com.garde.domain.repo.ProductRepository
+import com.garde.domain.repo.ProductRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

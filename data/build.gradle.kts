@@ -1,69 +1,74 @@
 plugins {
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt.android)
-    id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.sqldelight)
+}
+
+kotlin {
+    androidTarget()
+   // iosX64()
+   // iosArm64()
+   // iosSimulatorArm64()
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":core"))
+
+                // Kotlin Coroutines
+                implementation(libs.coroutine.core)
+
+                // Ktor multiplatform
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.json)
+
+                // SQLDelight multiplatform
+                implementation(libs.sqldelight.coroutines)
+
+                // Koin multiplatform
+                implementation(libs.koin.core)
+            }
+        }
+
+        val androidMain by getting {
+            dependencies {
+                // Android-specific
+                implementation(libs.androidx.core.ktx)
+                implementation(libs.ktor.client.cio)
+                implementation(libs.sqldelight.android)
+                implementation(libs.koin.android)
+            }
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.junit)
+            }
+        }
+    }
+
+    sqldelight {
+        databases {
+            create("ProductDataBase") {
+                packageName.set("data.db")
+            }
+        }
+    }
 }
 
 android {
-    namespace = "com.garde.data"
+    namespace = "data"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 24
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
-dependencies {
-    implementation(project(":core"))
 
-    //default
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.play.services.analytics.impl)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
-    //hilt
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler) // ✅ Utilisation du bon alias
-
-    //room
-    kapt(libs.room.compiler)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-
-
-    //Ktor
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.json)
-
-
-    //coroutine
-    implementation(libs.coroutine)
-    implementation(libs.coroutine.core)
-}

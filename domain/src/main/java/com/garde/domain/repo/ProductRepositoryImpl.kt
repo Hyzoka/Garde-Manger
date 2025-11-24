@@ -1,7 +1,7 @@
 package com.garde.domain.repo
 
-import com.garde.data.datasources.local.ProductDao
-import com.garde.data.datasources.remote.ProductDataSource
+import data.datasources.local.ProductDao
+import data.datasources.remote.ProductDataSource
 import com.garde.domain.model.Product
 import com.garde.domain.model.toDomain
 import com.garde.domain.model.toEntity

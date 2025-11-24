@@ -1,6 +1,6 @@
-package com.garde.data.datasources.remote
+package data.datasources.remote
 
-import com.garde.data.model.ProductResponse
+import data.model.ProductResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

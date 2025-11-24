@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt.android)
-    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -43,14 +41,11 @@ dependencies {
     implementation(project(":component"))
     implementation(project(":core"))
 
+    // Android
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    //Compose
+    // Compose
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -58,18 +53,22 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    //hilt
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-    implementation(libs.hilt.compose.navigation)
+    //Koin
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose)
 
-    //navigation
+    // Navigation
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.navigation.compose)
 
-    //coroutine
+    // Coroutines
     implementation(libs.coroutine)
 
-    //glide
+    // Glide (ou Coil pour KMP plus tard)
     implementation(libs.glide)
+
+    // Tests
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

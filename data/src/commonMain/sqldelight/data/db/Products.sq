@@ -1,0 +1,40 @@
+CREATE TABLE products (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    barcode TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    expirationDate TEXT NOT NULL
+);
+
+-- Index pour optimiser les recherches
+CREATE INDEX idx_barcode ON products(barcode);
+CREATE INDEX idx_expiration ON products(expirationDate);
+
+-- Queries
+selectAll:
+SELECT * FROM products ORDER BY expirationDate ASC;
+
+selectById:
+SELECT * FROM products WHERE id = ?;
+
+selectByBarcode:
+SELECT * FROM products WHERE barcode = ? ORDER BY expirationDate ASC;
+
+findByBarcodeAndDate:
+SELECT * FROM products WHERE barcode = ? AND expirationDate = ?;
+
+insert:
+INSERT OR REPLACE INTO products(id, name, barcode, quantity, expirationDate)
+VALUES (?, ?, ?, ?, ?);
+
+updateQuantity:
+UPDATE products SET quantity = ? WHERE id = ?;
+
+incrementQuantity:
+UPDATE products SET quantity = quantity + ? WHERE id = ?;
+
+deleteById:
+DELETE FROM products WHERE id = ?;
+
+deleteAll:
+DELETE FROM products;

@@ -19,8 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-class AddProductViewModel @Inject constructor(
+class AddProductViewModel (
     private val repository: ProductRepository,
     private val extractExpirationDateUseCase: ExtractExpirationDateUseCase,
     private val validateExpirationDateUseCase: ValidateExpirationDateUseCase

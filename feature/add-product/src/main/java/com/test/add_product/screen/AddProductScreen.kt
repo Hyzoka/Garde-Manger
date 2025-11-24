@@ -68,12 +68,13 @@ import com.test.add_product.component.DrawBarcode
 import com.test.add_product.utils.BarcodeScanningAnalyzer
 import com.test.add_product.utils.MultiAnalyzer
 import com.test.add_product.utils.TextRecognitionAnalyzer
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AddProductScreen(
     onPopBackStack: () -> Unit,
-    viewModel: AddProductViewModel = hiltViewModel()
+    viewModel: AddProductViewModel = koinViewModel()
 ) {
     val productState by viewModel.productState.collectAsStateWithLifecycle()
     val step by viewModel.step.collectAsStateWithLifecycle()

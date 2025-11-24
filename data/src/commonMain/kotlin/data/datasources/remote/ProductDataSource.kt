@@ -1,6 +1,6 @@
-package com.garde.data.datasources.remote
+package data.datasources.remote
 
-import com.garde.data.model.ProductResponse
+import data.model.ProductResponse
 
 interface ProductDataSource {
 

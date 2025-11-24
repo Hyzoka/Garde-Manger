@@ -1,4 +1,4 @@
-package com.garde.data.model
+package data.model
 
 import kotlinx.serialization.SerialName
 

@@ -24,12 +24,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.garde.component.SearchBar
 import com.garde.component.loading.LoadingListSkeleton
 import com.garde.component.product.ProductGrid
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ProductListScreen(
     onAddProductClick: () -> Unit,
     onProductClick: (String) -> Unit,
-    viewModel: ProductListViewModel = hiltViewModel()
+    viewModel: ProductListViewModel = koinViewModel()
 ) {
     val viewState by viewModel.viewState.collectAsState()
 

@@ -1,7 +1,7 @@
 package com.garde.domain.model
 
-import com.garde.data.model.ProductDto
-import com.garde.data.model.ProductEntity
+import data.model.ProductDto
+import data.model.ProductEntity
 
 data class Product(
     val id: String,
